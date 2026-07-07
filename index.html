@@ -146,6 +146,7 @@
       <div id="workout"></div>
       <div class="section-label">Suplementos del día</div>
       <div id="checks"></div>
+      <div id="testAlert"></div>
       <div class="streak">
         <div class="num" id="streakNum">0</div>
         <div class="txt">días seguidos<br>con rutina hecha</div>
@@ -261,9 +262,9 @@
 
   var GROUPS=[
     {time:"8:30",name:"Mañana",items:[
-      {id:"melena",label:"Melena de León",sub:"8:30 · con el café"},
-      {id:"cordyceps",label:"Cordyceps",sub:"8:30 · con el café"},
-      {id:"ginkgo",label:"Ginseng + Ginkgo",sub:"8:30 · concentrado"}
+      {id:"melena",label:"Melena de León",sub:"8:30 · con el café",cyc:60},
+      {id:"cordyceps",label:"Cordyceps",sub:"8:30 · con el café",cyc:60},
+      {id:"ginkgo",label:"Ginseng + Ginkgo",sub:"8:30 · concentrado",cyc:60}
     ]},
     {time:"12:30",name:"Mediodía · trabajo",items:[
       {id:"vitd",label:"Vitamina D",sub:"12:30 · con el almuerzo (grasa)"}
@@ -328,6 +329,7 @@
   document.getElementById("todayDate").textContent=fmtLong(new Date());
 
   // HOY
+  function suppDays(id){var n=0;for(var k in data.daily){if(data.daily[k][id])n++;}return n;}
   function renderChecks(){
     var tk=todayKey(),day=data.daily[tk]||{},wrap=document.getElementById("checks");
     wrap.innerHTML="";
@@ -337,8 +339,10 @@
       wrap.appendChild(gh);
       g.items.forEach(function(c){
         var on=!!day[c.id],el=document.createElement("div");
+        var nd=suppDays(c.id),acum=nd>0?' · <span style="color:var(--amber)">'+nd+(nd===1?" día":" días")+' acum.</span>':'';
+        if(c.cyc&&nd>=c.cyc)acum+=' · <span style="color:var(--danger)">ciclo cumplido ('+c.cyc+'+): evalúa pausar</span>';
         el.className="check"+(on?" on":"");
-        el.innerHTML='<div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="label">'+c.label+(c.sub?'<div class="sub">'+c.sub+'</div>':'')+'</div>';
+        el.innerHTML='<div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="label">'+c.label+'<div class="sub">'+c.sub+acum+'</div></div>';
         el.addEventListener("click",function(){
           var dd=data.daily[tk]||{};dd[c.id]=!dd[c.id];data.daily[tk]=dd;save();renderChecks();renderStreak();
         });
@@ -394,7 +398,7 @@
   function renderWorkout(){
     var tk=todayKey(),day=todayDayPlan(),keys=day==="A"?DAY_A:DAY_B;
     document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al terminarlo y anota peso y repeticiones. La app te dice cuándo subir.</p>'+
-      '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita.</p></div>';
+      '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita. <a href="https://www.youtube.com/results?search_query=movilidad+articular+calentamiento+circulos+cadera+hombros+medias+sentadillas" target="_blank" rel="noopener" style="color:var(--amber)">▶ ver ejemplo en video</a></p></div>';
     var w=data.workouts[tk],wrap=document.getElementById("workout");
     wrap.innerHTML="";
     keys.forEach(function(key){
@@ -456,6 +460,18 @@
     }
     document.getElementById("testNote").textContent=note;
   }
+  function renderTestAlert(){
+    // dos ritmos: peso corporal semanal · pruebas físicas cada 14 días
+    var ms=sortedM(),el=document.getElementById("testAlert"),msg="";
+    var lastPeso=null,lastTest=null;
+    ms.forEach(function(m){if(m.peso!=null)lastPeso=m.date;if(m.flexiones!=null||m.sillas!=null||m.plancha!=null)lastTest=m.date;});
+    function daysSince(d){return Math.floor((Date.now()-new Date(d+"T12:00:00").getTime())/864e5);}
+    if(!lastTest){msg="Aún no tienes línea base: haz tu primera prueba de avance en PROGRESO (peso + flexiones + silla + plancha, 10 min, ideal un fin de semana descansado).";}
+    else if(daysSince(lastTest)>=14){msg="Han pasado "+daysSince(lastTest)+" días desde tu prueba de avance — te toca la completa. Pestaña PROGRESO.";}
+    else if(!lastPeso||daysSince(lastPeso)>=7){msg="Toca pesarse (1 minuto): registra solo el peso en PROGRESO, los demás campos déjalos vacíos.";}
+    else if(data.lastExport==null||daysSince(data.lastExport)>=21){msg="Hace "+(data.lastExport==null?"mucho":daysSince(data.lastExport)+" días")+" que no respaldas tus datos: PLAN → Exportar respaldo (30 segundos).";}
+    el.innerHTML=msg?'<div class="card" style="border-color:var(--amber-dim);margin-top:14px;"><p style="font-size:13px;margin:0;color:var(--amber);">'+msg+'</p></div>':"";
+  }
   function renderHistory(){
     var ms=sortedM().reverse(),wrap=document.getElementById("history");
     if(ms.length===0){wrap.innerHTML='<div class="empty">Aún no hay mediciones.</div>';return;}
@@ -490,10 +506,11 @@
       var tk=todayKey(),wd=data.workouts[tk],logged=wd&&wd.ex&&wd.ex[key],s=suggest(key);
       h+='<div class="suggest">'+s.txt+'</div>'+
         '<div id="restBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:40px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
-        '<button class="btn subtle" id="btnRest" style="margin-bottom:14px;">▶ Descanso entre series · 90 s</button>'+
+        '<button class="btn subtle" id="btnRest" style="margin-bottom:6px;">▶ Descanso entre series · 90 s</button>'+
+        '<p style="font-size:12px;color:var(--text-faint);margin-bottom:14px;text-align:center;">En el descanso: de pie o camina suave, sorbo de agua. No elongues ahora.</p>'+
         '<div class="field"><label>Peso usado por mancuerna (kg)</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
-        '<div class="field-row"><div class="field"><label>Reps serie 1'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
-        '<div class="field"><label>Reps serie 2'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
+        '<div class="field-row"><div class="field"><label>Serie 1 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
+        '<div class="field"><label>Serie 2 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
         '<button class="btn" id="saveLog">Guardar ejercicio</button>';
     }
     h+='<a class="btn ghost" href="'+yt+'" target="_blank" rel="noopener" style="text-decoration:none;margin-top:10px;">▶ Ver video del movimiento</a>'+
@@ -538,7 +555,7 @@
     // Prellenar: lo ya registrado hoy manda; el peso además hereda la última medición
     function pre(id){return today&&today[id]!=null?today[id]:"";}
     var pesoPre=today&&today.peso!=null?today.peso:(last.peso!=null?last.peso:"");
-    sheet.innerHTML='<h2>'+(today?'Editar medición de hoy':'Nueva medición')+'</h2><div class="sub">'+fmtLong(new Date())+'</div>'+
+    sheet.innerHTML='<h2>'+(today?'Editar medición de hoy':'Nueva medición')+'</h2><div class="sub">'+fmtLong(new Date())+' · Llena solo lo que mediste hoy: lo que dejes vacío conserva su valor anterior.</div>'+
       '<div class="field-row"><div class="field"><label>Peso (kg)</label><input type="number" inputmode="decimal" step="0.1" id="in-peso" value="'+pesoPre+'"></div>'+
       '<div class="field"><label>Plancha (seg)</label><input type="number" inputmode="numeric" id="in-plancha" value="'+pre("plancha")+'" placeholder="0"></div></div>'+
       '<div class="field-row"><div class="field"><label>Flexiones máx</label><input type="number" inputmode="numeric" id="in-flexiones" value="'+pre("flexiones")+'" placeholder="0"></div>'+
@@ -574,7 +591,7 @@
       var entry={date:tk,peso:keep(val("in-peso"),old.peso),flexiones:keep(val("in-flexiones"),old.flexiones),sillas:keep(val("in-sillas"),old.sillas),plancha:keep(val("in-plancha"),old.plancha)};
       var idx=-1;for(var j=0;j<data.measurements.length;j++){if(data.measurements[j].date===tk){idx=j;break;}}
       if(idx>=0)data.measurements[idx]=entry;else data.measurements.push(entry);
-      save();renderReadings();renderHistory();closeSheet();toast("Medición guardada");
+      save();renderReadings();renderHistory();renderTestAlert();closeSheet();toast("Medición guardada");
     });
   });
 
@@ -582,6 +599,7 @@
   document.getElementById("exportBtn").addEventListener("click",function(){
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
     a.href=url;a.download="estado-fisico-respaldo-"+todayKey()+".json";document.body.appendChild(a);a.click();document.body.removeChild(a);
+    data.lastExport=todayKey();save();renderTestAlert();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);toast("Respaldo generado");
   });
   document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click();});
@@ -606,7 +624,7 @@
   var toastEl=document.getElementById("toast"),toastT;
   function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove("show");},1800);}
 
-  function renderAll(){renderWorkout();renderChecks();renderStreak();renderReadings();renderHistory();renderExercises();}
+  function renderAll(){renderWorkout();renderChecks();renderStreak();renderReadings();renderHistory();renderTestAlert();renderExercises();}
   renderAll();
 
   // Service worker: cache offline (requiere https o localhost; en file:// no corre)
