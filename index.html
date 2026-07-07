@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Estado Físico">
+<meta name="theme-color" content="#14110D">
+<title>Estado Físico</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<style>
+  @font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(./fonts/plex-sans.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/plex-mono-400.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(./fonts/plex-mono-500.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url(./fonts/plex-mono-600.woff2) format('woff2');}
+  :root{
+    --bg:#14110D;--surface:#1E1912;--surface-2:#262019;--line:#332B20;
+    --amber:#F5A623;--amber-bright:#FFC766;--amber-dim:#8A6B2E;
+    --done:#9BB167;--text:#F0E9DD;--text-dim:#A89B85;--text-faint:#6E6354;--danger:#C8694B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;}
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:520px;margin:0 auto;}
+  header{padding:calc(env(safe-area-inset-top) + 18px) 20px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#1A150F,var(--bg));}
+  .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber-dim);font-weight:500;}
+  header h1{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-top:2px;}
+  .today-date{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--text-dim);margin-top:3px;text-transform:capitalize;}
+  main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 28px;}
+  .view{display:none;}
+  .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .section-label{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint);font-weight:500;margin:0 0 12px 2px;}
+  .section-label:not(:first-child){margin-top:30px;}
+  .group-head{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 10px;}
+  .group-head:first-of-type{margin-top:4px;}
+  .group-head .g-name{font-size:14px;font-weight:600;color:var(--text);}
+  .group-head .g-time{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--amber);}
+  .check{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .check:active{background:var(--surface-2);}
+  .check.on{border-color:var(--done);}
+  .box{width:25px;height:25px;border-radius:8px;flex-shrink:0;border:2px solid var(--text-faint);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .check.on .box{background:var(--done);border-color:var(--done);}
+  .box svg{width:14px;height:14px;opacity:0;transform:scale(.5);transition:all .15s;}
+  .check.on .box svg{opacity:1;transform:scale(1);}
+  .check .label{font-weight:500;flex:1;}
+  .check .sub{font-size:12.5px;color:var(--text-dim);font-weight:400;}
+  .streak{display:flex;align-items:baseline;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:24px;}
+  .streak .num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:34px;font-weight:600;color:var(--amber);}
+  .streak .txt{font-size:13px;color:var(--text-dim);line-height:1.35;}
+  .readings{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .gauge{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 16px 13px;position:relative;overflow:hidden;}
+  .gauge .g-label{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);}
+  .gauge .g-val{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:30px;font-weight:600;color:var(--text);line-height:1.1;margin-top:6px;}
+  .gauge .g-unit{font-size:13px;color:var(--text-dim);font-weight:400;margin-left:3px;}
+  .gauge .spark{margin-top:8px;height:26px;width:100%;display:block;}
+  .gauge .g-delta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;margin-top:4px;}
+  .g-delta.up{color:var(--done);}.g-delta.flat{color:var(--text-faint);}.g-delta.down{color:var(--danger);}
+  .btn{display:block;width:100%;text-align:center;background:var(--amber);color:#1a1206;font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:600;border:none;border-radius:13px;padding:16px;cursor:pointer;transition:transform .1s,filter .15s;}
+  .btn:active{transform:scale(.985);filter:brightness(1.08);}
+  .btn.ghost{background:transparent;color:var(--amber);border:1px solid var(--amber-dim);}
+  .btn.subtle{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--line);font-weight:500;font-size:15px;}
+  .btn-row{display:flex;gap:10px;margin-top:10px;}
+  .btn-row .btn{flex:1;}
+  .hist{margin-top:6px;}
+  .hist-row{display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;}
+  .hist-row.head{color:var(--text-faint);font-size:10px;letter-spacing:.1em;text-transform:uppercase;}
+  .hist-row .d{color:var(--text-dim);text-align:left;}
+  .hist-row span{text-align:center;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:12px;}
+  .card h3{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .card p{font-size:14px;color:var(--text-dim);}
+  .proto{padding:6px 18px;}
+  .proto-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .proto-row:last-child{border-bottom:none;}
+  .proto-row .pname{font-weight:500;font-size:14px;}
+  .proto-row .pwhen{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  .proto-row .pdose{font-size:12.5px;color:var(--text-dim);}
+  .ex{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .ex:active{background:var(--surface-2);}
+  .ex .thumb{width:52px;height:46px;flex-shrink:0;background:var(--bg);border-radius:9px;border:1px solid var(--line);overflow:hidden;}
+  .ex .thumb svg{width:100%;height:100%;display:block;}
+  .ex .ex-body{flex:1;min-width:0;}
+  .ex .ex-name{font-weight:600;font-size:14px;}
+  .ex .ex-sub{font-size:12.5px;color:var(--text-dim);}
+  .ex .ex-sets{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;color:var(--amber);white-space:nowrap;}
+  .ex .chev{color:var(--text-faint);flex-shrink:0;}
+  .day-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--bg);background:var(--amber);padding:3px 9px;border-radius:6px;font-weight:600;margin-bottom:10px;}
+  .buy-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .buy-row:last-child{border-bottom:none;}
+  .buy-row .price{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--text-dim);}
+  .buy-total{display:flex;justify-content:space-between;padding-top:11px;margin-top:4px;font-weight:600;}
+  .buy-total .price{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--amber);}
+  .overlay{position:fixed;inset:0;background:rgba(8,6,4,.72);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .overlay.show{display:flex;}
+  .sheet{background:var(--surface);border:1px solid var(--line);border-bottom:none;border-radius:20px 20px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 24px);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideup .3s cubic-bezier(.2,.8,.2,1);}
+  @keyframes slideup{from{transform:translateY(100%);}to{transform:none;}}
+  .sheet h2{font-size:20px;font-weight:700;margin-bottom:2px;}
+  .sheet .sub{font-size:13px;color:var(--text-dim);margin-bottom:18px;}
+  .ex-illus{width:100%;height:200px;background:var(--bg);border:1px solid var(--line);border-radius:14px;margin-bottom:18px;}
+  .ex-illus svg{width:100%;height:100%;}
+  .steps{counter-reset:s;margin-bottom:18px;}
+  .step{display:flex;gap:12px;padding:9px 0;font-size:14.5px;color:var(--text);align-items:flex-start;}
+  .step:before{counter-increment:s;content:counter(s);flex-shrink:0;width:23px;height:23px;border-radius:50%;background:var(--surface-2);border:1px solid var(--amber-dim);color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:500;}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--text);font-size:17px;font-family:'IBM Plex Mono',ui-monospace,monospace;}
+  .field input:focus{outline:none;border-color:var(--amber);}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  nav{display:flex;border-top:1px solid var(--line);background:#171209;padding-bottom:env(safe-area-inset-bottom);}
+  nav button{flex:1;background:none;border:none;cursor:pointer;padding:11px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-faint);transition:color .15s;}
+  nav button.active{color:var(--amber);}
+  nav button svg{width:23px;height:23px;}
+  nav button span{font-size:10.5px;font-weight:500;letter-spacing:.02em;}
+  .empty{text-align:center;color:var(--text-faint);font-size:14px;padding:24px 10px;}
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 80px);transform:translateX(-50%) translateY(20px);background:var(--surface-2);border:1px solid var(--line);color:var(--text);padding:12px 20px;border-radius:30px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:60;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* exercise figure styles */
+  .fig{fill:none;stroke:var(--text);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}
+  .fig-head{fill:var(--text);stroke:none;}
+  .fig-weight{fill:var(--amber);stroke:none;}
+  .fig-ground{stroke:var(--line);stroke-width:3;}
+  .fig-arrow{stroke:var(--amber);stroke-width:3;fill:none;stroke-linecap:round;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">Plan personal · Salud y fuerza</div>
+    <h1>Estado Físico</h1>
+    <div class="today-date" id="todayDate"></div>
+  </header>
+
+  <main>
+    <section class="view active" id="view-hoy">
+      <div class="section-label">Cumplimiento de hoy</div>
+      <div id="checks"></div>
+      <div class="streak">
+        <div class="num" id="streakNum">0</div>
+        <div class="txt">días seguidos<br>con rutina hecha</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-progreso">
+      <div class="section-label">Últimas lecturas</div>
+      <div class="readings" id="readings"></div>
+      <button class="btn" id="openMeasure" style="margin-top:16px;">Registrar medición</button>
+      <div class="section-label">Historial</div>
+      <div id="history"></div>
+    </section>
+
+    <section class="view" id="view-plan">
+      <div class="section-label">Objetivo</div>
+      <div class="card">
+        <h3>Recuperar masa muscular y sostener salud</h3>
+        <p>Ganar músculo funcional y mantener bienestar físico y mental, de forma sostenible y compatible con la jornada laboral. Sin meta de peso: el peso se mide como tendencia, no como objetivo.</p>
+      </div>
+
+      <div class="section-label">Rutina de fuerza · ~8 min</div>
+      <div class="card" style="margin-bottom:14px;">
+        <p style="margin:0;">Alterna <b style="color:var(--text)">A</b> y <b style="color:var(--text)">B</b> día por día. Cada ejercicio: <b style="color:var(--text)">2 series</b>, dejando 1–2 reps en el tanque. Calienta 1 min antes (movilidad suave de caderas y hombros): recién levantado el cuerpo está frío. Toca cualquier ejercicio para ver cómo se hace.</p>
+      </div>
+      <div class="day-tag">DÍA A · EMPUJE</div>
+      <div id="exA"></div>
+      <div class="day-tag" style="margin-top:14px;">DÍA B · TIRÓN</div>
+      <div id="exB"></div>
+      <div class="card" style="margin-top:14px;">
+        <h3>La regla que construye músculo</h3>
+        <p>Cuando completes las 12 reps limpias en las dos series, sube el peso la próxima vez. Esa subida gradual —no los minutos— es lo que genera músculo.</p>
+      </div>
+
+      <div class="section-label">Protocolo de suplementos</div>
+      <div class="card proto">
+        <div class="proto-row"><div><div class="pname">Melena de León</div><div class="pdose">hongo · cognición</div></div><div class="pwhen">8:30 · café</div></div>
+        <div class="proto-row"><div><div class="pname">Cordyceps</div><div class="pdose">hongo · energía</div></div><div class="pwhen">8:30 · café</div></div>
+        <div class="proto-row"><div><div class="pname">Panax Ginseng + Ginkgo</div><div class="pdose">concentrado</div></div><div class="pwhen">8:30 · café</div></div>
+        <div class="proto-row"><div><div class="pname">Vitamina D</div><div class="pdose">la del trabajo · con comida (grasa)</div></div><div class="pwhen">12:30 · almuerzo</div></div>
+        <div class="proto-row"><div><div class="pname">Creatina Creapure</div><div class="pdose">5 g · en el café</div></div><div class="pwhen">15:00 · café</div></div>
+        <div class="proto-row"><div><div class="pname">Proteína Isolate</div><div class="pdose">1 scoop</div></div><div class="pwhen">15:00 · café</div></div>
+        <div class="proto-row"><div><div class="pname">Magnesio</div><div class="pdose">descanso · sueño</div></div><div class="pwhen">noche · casa</div></div>
+      </div>
+
+      <div class="section-label">Equipo</div>
+      <div class="card">
+        <div class="buy-row"><span>Mancuernas York Spinlock 20 kg</span><span class="price">2× barra 35 cm</span></div>
+        <div class="buy-row"><span>Discos 1" (kg)</span><span class="price">4×0,5 · 5×1,25 · 4×2,5</span></div>
+        <div class="buy-row"><span>Barra + 2 collares</span><span class="price">~1,5 kg*</span></div>
+        <div class="buy-row"><span>Carga máx por mancuerna</span><span class="price">~10 kg</span></div>
+        <div class="buy-row"><span>Accesorios</span><span class="price">dominadas · saco</span></div>
+      </div>
+      <div class="card">
+        <h3>Escalera de cargas · por mancuerna</h3>
+        <p style="font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--amber);font-size:14px;margin:6px 0 8px;">1,5 → 2,5 → 4 → 5 → 6,5 → 7,5 → 9 → 10 kg</p>
+        <p>Al completar las 12 reps limpias en las dos series, pasa al escalón siguiente. Alcanza para armar las dos mancuernas iguales en cualquier escalón. *Valores nominales; pendiente pesar la barra armada.</p>
+      </div>
+
+      <div class="section-label">Respaldo de datos</div>
+      <div class="card">
+        <p style="margin-bottom:14px;">La app guarda todo en este dispositivo. Exporta un respaldo a tu carpeta del PC, o restaura desde un archivo.</p>
+        <button class="btn ghost" id="exportBtn">Exportar respaldo (.json)</button>
+        <div class="btn-row">
+          <button class="btn subtle" id="importBtn">Importar respaldo</button>
+          <button class="btn subtle" id="resetBtn">Borrar todo</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
+      </div>
+      <div style="height:6px;"></div>
+      <p style="text-align:center;font-size:11px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;">uso personal · v3</p>
+    </section>
+  </main>
+
+  <nav>
+    <button class="active" data-view="hoy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span>Hoy</span>
+    </button>
+    <button data-view="progreso">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 7h5v5"/></svg>
+      <span>Progreso</span>
+    </button>
+    <button data-view="plan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+      <span>Plan</span>
+    </button>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheetContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="estadofisico_v2";
+
+  var GROUPS=[
+    {time:"~8:30 · café",name:"Mañana",items:[
+      {id:"rutina",label:"Rutina · 7 min",sub:"antes de la ducha"},
+      {id:"melena",label:"Melena de León",sub:""},
+      {id:"cordyceps",label:"Cordyceps",sub:""},
+      {id:"ginkgo",label:"Ginseng + Ginkgo",sub:"concentrado"}
+    ]},
+    {time:"~12:30 · almuerzo",name:"Mediodía · trabajo",items:[
+      {id:"vitd",label:"Vitamina D",sub:"la del trabajo · con comida"}
+    ]},
+    {time:"~15:00 · café",name:"Tarde",items:[
+      {id:"creatina",label:"Creatina",sub:"5 g, en el café"},
+      {id:"proteina",label:"Proteína",sub:"1 scoop"}
+    ]},
+    {time:"noche · casa",name:"Noche",items:[
+      {id:"magnesio",label:"Magnesio",sub:"al llegar"}
+    ]}
+  ];
+
+  var METRICS=[
+    {id:"peso",label:"Peso",unit:"kg"},
+    {id:"flexiones",label:"Flexiones",unit:"máx"},
+    {id:"dominadas",label:"Dominadas",unit:"máx"},
+    {id:"plancha",label:"Plancha",unit:"seg"}
+  ];
+
+  // Exercise illustrations (own SVG, no copyright, work offline)
+  var G='<line class="fig-ground" x1="20" y1="186" x2="220" y2="186"/>';
+  var EXERCISES={
+    goblet:{name:"Sentadilla goblet",sub:"cuádriceps, glúteo",sets:"2×8–12",
+      svg:G+'<circle class="fig-head" cx="120" cy="34" r="14"/><path class="fig" d="M120 48 L120 104"/><path class="fig" d="M99 62 L110 90 M141 62 L130 90"/><circle class="fig-weight" cx="120" cy="92" r="11"/><path class="fig" d="M105 104 L86 140 L90 184 M135 104 L154 140 L150 184"/>',
+      steps:["De pie, pies un poco más anchos que los hombros, puntas levemente hacia afuera.","Sostén una mancuerna en vertical, pegada al pecho con ambas manos (como un cáliz).","Baja doblando rodillas y caderas, pecho erguido, hasta que los muslos queden casi paralelos al suelo.","Sube empujando con los talones hasta quedar de pie. Esa es 1 repetición."],
+      video:"sentadilla goblet con mancuerna tecnica"},
+    press_hombro:{name:"Press de hombros de pie",sub:"hombros, tríceps",sets:"2×8–12",
+      svg:G+'<circle class="fig-head" cx="120" cy="58" r="14"/><path class="fig" d="M120 72 L120 128"/><path class="fig" d="M100 84 L92 44 M140 84 L148 44"/><rect class="fig-weight" x="84" y="36" width="18" height="9" rx="2"/><rect class="fig-weight" x="138" y="36" width="18" height="9" rx="2"/><path class="fig" d="M120 128 L106 184 M120 128 L134 184"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
+      steps:["De pie, una mancuerna en cada mano a la altura de los hombros, palmas mirando adelante.","Codos apuntando hacia abajo y un poco adelante.","Empuja las mancuernas hacia arriba hasta estirar los brazos sobre la cabeza, sin arquear la espalda.","Baja controlando hasta los hombros. Esa es 1 repetición."],
+      video:"press militar mancuernas de pie tecnica"},
+    press_pecho:{name:"Press de pecho en suelo",sub:"pecho, tríceps · o flexiones",sets:"2×8–12",
+      svg:G+'<line class="fig-ground" x1="20" y1="150" x2="220" y2="150"/><circle class="fig-head" cx="56" cy="138" r="12"/><path class="fig" d="M68 142 L150 142"/><path class="fig" d="M150 142 L168 120 L182 148"/><path class="fig" d="M86 140 L96 108 M96 108 L94 92"/><rect class="fig-weight" x="84" y="84" width="20" height="9" rx="2"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
+      steps:["Acostado de espaldas en el suelo o colchoneta, rodillas dobladas, pies apoyados.","Una mancuerna en cada mano a la altura del pecho, codos en el suelo a ~45°.","Empuja las mancuernas hacia el techo hasta estirar los brazos.","Baja lento hasta que los codos toquen el suelo. Esa es 1 repetición.","Sin mancuernas: hazlo como flexiones, manos bajo los hombros, cuerpo recto."],
+      video:"floor press mancuernas tecnica"},
+    peso_muerto:{name:"Peso muerto rumano",sub:"isquios, glúteo, lumbar",sets:"2×8–12",
+      svg:G+'<circle class="fig-head" cx="72" cy="52" r="13"/><path class="fig" d="M80 62 L146 108"/><path class="fig" d="M146 108 L150 150 L144 184"/><path class="fig" d="M84 66 L92 122"/><rect class="fig-weight" x="82" y="124" width="20" height="9" rx="2"/><path class="fig-arrow" d="M170 90 Q182 110 172 134"/>',
+      steps:["De pie, mancuernas frente a los muslos, rodillas apenas dobladas (casi rectas).","Lleva las caderas hacia atrás bajando el tronco, espalda recta (no curvada).","Las mancuernas bajan pegadas a las piernas hasta media canilla; sentirás estiramiento atrás del muslo.","Vuelve subiendo apretando los glúteos. Peso moderado, sobre todo en la mañana."],
+      video:"peso muerto rumano mancuernas tecnica espalda recta"},
+    remo:{name:"Remo con mancuerna",sub:"espalda, bíceps",sets:"2×10/lado",
+      svg:G+'<circle class="fig-head" cx="66" cy="64" r="13"/><path class="fig" d="M76 72 L150 104"/><path class="fig" d="M150 104 L156 150 L150 184"/><path class="fig" d="M88 78 L96 124"/><rect class="fig-weight" x="86" y="126" width="20" height="9" rx="2"/><path class="fig" d="M112 90 L128 100 L120 116"/><path class="fig-arrow" d="M138 130 L132 112 M126 120 L133 110 L140 118"/>',
+      steps:["Inclina el tronco hacia adelante con espalda recta; apoya una mano en una silla o tu rodilla.","Con la otra mano sostén la mancuerna colgando hacia el suelo.","Tira la mancuerna hacia tu cadera, llevando el codo hacia atrás y apretando la espalda.","Baja controlando. Completa las reps de un lado y cambia."],
+      video:"remo con mancuerna a una mano tecnica"},
+    zancada:{name:"Zancada o búlgara",sub:"piernas, unilateral",sets:"2×8/lado",
+      svg:G+'<circle class="fig-head" cx="112" cy="42" r="13"/><path class="fig" d="M112 55 L112 112"/><path class="fig" d="M112 112 L146 142 L146 184"/><path class="fig" d="M112 112 L82 150 L72 184"/><path class="fig" d="M100 64 L94 108 M124 64 L132 108"/><rect class="fig-weight" x="86" y="106" width="16" height="8" rx="2"/><rect class="fig-weight" x="126" y="106" width="16" height="8" rx="2"/>',
+      steps:["De pie, una mancuerna en cada mano a los costados.","Da un paso largo hacia adelante con una pierna.","Baja doblando ambas rodillas hasta que la de atrás casi toque el suelo; tronco erguido.","Empuja con la pierna de adelante para volver. Completa el lado y cambia.","Variante búlgara: apoya el empeine de atrás en una silla para más intensidad."],
+      video:"zancada con mancuernas tecnica"}
+  };
+  var DAY_A=["goblet","press_hombro","press_pecho"];
+  var DAY_B=["peso_muerto","remo","zancada"];
+
+  var data=load();
+  function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return seed();}
+  function seed(){return{daily:{},measurements:[]};}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){toast("No se pudo guardar");}}
+
+  function todayKey(){var n=new Date();return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate());}
+  function pad(n){return n<10?"0"+n:""+n;}
+  function fmtLong(d){var di=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],m=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];return di[d.getDay()]+", "+d.getDate()+" "+m[d.getMonth()]+" "+d.getFullYear();}
+  function fmtShort(iso){var p=iso.split("-");return p[2]+"/"+p[1];}
+
+  document.getElementById("todayDate").textContent=fmtLong(new Date());
+
+  // HOY
+  function renderChecks(){
+    var tk=todayKey(),day=data.daily[tk]||{},wrap=document.getElementById("checks");
+    wrap.innerHTML="";
+    GROUPS.forEach(function(g){
+      var gh=document.createElement("div");gh.className="group-head";
+      gh.innerHTML='<span class="g-name">'+g.name+'</span><span class="g-time">'+g.time+'</span>';
+      wrap.appendChild(gh);
+      g.items.forEach(function(c){
+        var on=!!day[c.id],el=document.createElement("div");
+        el.className="check"+(on?" on":"");
+        el.innerHTML='<div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="label">'+c.label+(c.sub?'<div class="sub">'+c.sub+'</div>':'')+'</div>';
+        el.addEventListener("click",function(){
+          var dd=data.daily[tk]||{};dd[c.id]=!dd[c.id];data.daily[tk]=dd;save();renderChecks();renderStreak();
+        });
+        wrap.appendChild(el);
+      });
+    });
+  }
+  function renderStreak(){
+    var n=0,d=new Date();
+    for(var i=0;i<400;i++){
+      var k=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),day=data.daily[k];
+      if(day&&day.rutina){n++;}else if(i===0){}else{break;}
+      d.setDate(d.getDate()-1);
+    }
+    document.getElementById("streakNum").textContent=n;
+  }
+
+  // PROGRESO
+  function sortedM(){return data.measurements.slice().sort(function(a,b){return a.date<b.date?-1:1;});}
+  function sparkline(vals,w,h){
+    if(vals.length<2)return '<svg class="spark" viewBox="0 0 '+w+' '+h+'"></svg>';
+    var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),range=(max-min)||1,step=w/(vals.length-1);
+    var pts=vals.map(function(v,i){return (i*step).toFixed(1)+","+(h-2-((v-min)/range)*(h-4)).toFixed(1);});
+    return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><polyline points="'+pts.join(" ")+'" fill="none" stroke="var(--amber)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function renderReadings(){
+    var ms=sortedM(),wrap=document.getElementById("readings");
+    wrap.innerHTML="";
+    METRICS.forEach(function(m){
+      // serie solo con mediciones que sí registraron esta métrica (los null no cuentan)
+      var serie=ms.filter(function(x){return x[m.id]!=null&&x[m.id]!=="";}).map(function(x){return Number(x[m.id]);});
+      var v=serie.length?serie[serie.length-1]:null,delta="",dcls="flat";
+      if(serie.length>1){var diff=serie[serie.length-1]-serie[serie.length-2];
+        if(diff>0){delta="▲ +"+(+diff.toFixed(1));dcls="up";}
+        else if(diff<0){delta="▼ "+(+diff.toFixed(1));dcls="down";}
+        else{delta="– sin cambio";dcls="flat";}}
+      var el=document.createElement("div");el.className="gauge";
+      el.innerHTML='<div class="g-label">'+m.label+'</div><div class="g-val">'+(v!=null?v:"–")+'<span class="g-unit">'+m.unit+'</span></div>'+sparkline(serie,120,26)+'<div class="g-delta '+dcls+'">'+(delta||"&nbsp;")+'</div>';
+      wrap.appendChild(el);
+    });
+  }
+  function renderHistory(){
+    var ms=sortedM().reverse(),wrap=document.getElementById("history");
+    if(ms.length===0){wrap.innerHTML='<div class="empty">Aún no hay mediciones.</div>';return;}
+    var h='<div class="hist"><div class="hist-row head"><span class="d">Fecha</span><span>Peso</span><span>Flex</span><span>Dom</span><span>Planc</span></div>';
+    ms.forEach(function(m){h+='<div class="hist-row"><span class="d">'+fmtShort(m.date)+'</span><span>'+(m.peso!=null?m.peso:"–")+'</span><span>'+(m.flexiones!=null?m.flexiones:"–")+'</span><span>'+(m.dominadas!=null?m.dominadas:"–")+'</span><span>'+(m.plancha!=null?m.plancha:"–")+'</span></div>';});
+    wrap.innerHTML=h+'</div>';
+  }
+
+  // PLAN — exercises
+  function renderExercises(){
+    function row(key){
+      var e=EXERCISES[key];
+      return '<div class="ex" data-ex="'+key+'"><div class="thumb">'+e.svg.replace('viewBox','data-vb').replace(/^/,'<svg viewBox="0 0 240 200">')+'</svg></div>'+
+        '<div class="ex-body"><div class="ex-name">'+e.name+'</div><div class="ex-sub">'+e.sub+'</div></div>'+
+        '<div class="ex-sets">'+e.sets+'</div>'+
+        '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>';
+    }
+    document.getElementById("exA").innerHTML=DAY_A.map(row).join("");
+    document.getElementById("exB").innerHTML=DAY_B.map(row).join("");
+    document.querySelectorAll(".ex").forEach(function(el){
+      el.addEventListener("click",function(){openExercise(el.dataset.ex);});
+    });
+  }
+  function openExercise(key){
+    var e=EXERCISES[key];
+    var steps=e.steps.map(function(s){return '<div class="step">'+s+'</div>';}).join("");
+    var yt="https://www.youtube.com/results?search_query="+encodeURIComponent(e.video);
+    sheet.innerHTML='<h2>'+e.name+'</h2><div class="sub">'+e.sub+' · '+e.sets+'</div>'+
+      '<div class="ex-illus"><svg viewBox="0 0 240 200">'+e.svg+'</svg></div>'+
+      '<div class="steps">'+steps+'</div>'+
+      '<a class="btn ghost" href="'+yt+'" target="_blank" rel="noopener" style="text-decoration:none;">▶ Ver video del movimiento</a>'+
+      '<button class="btn subtle" id="closeSheet" style="margin-top:10px;">Cerrar</button>';
+    overlay.classList.add("show");
+    document.getElementById("closeSheet").addEventListener("click",closeSheet);
+  }
+
+  // Measure
+  var overlay=document.getElementById("overlay"),sheet=document.getElementById("sheetContent");
+  function closeSheet(){overlay.classList.remove("show");}
+  overlay.addEventListener("click",function(e){if(e.target===overlay)closeSheet();});
+
+  document.getElementById("openMeasure").addEventListener("click",function(){
+    var tk=todayKey(),ms=sortedM(),last=ms[ms.length-1]||{},today=null;
+    for(var i=0;i<data.measurements.length;i++){if(data.measurements[i].date===tk){today=data.measurements[i];break;}}
+    // Prellenar: lo ya registrado hoy manda; el peso además hereda la última medición
+    function pre(id){return today&&today[id]!=null?today[id]:"";}
+    var pesoPre=today&&today.peso!=null?today.peso:(last.peso!=null?last.peso:"");
+    sheet.innerHTML='<h2>'+(today?'Editar medición de hoy':'Nueva medición')+'</h2><div class="sub">'+fmtLong(new Date())+'</div>'+
+      '<div class="field-row"><div class="field"><label>Peso (kg)</label><input type="number" inputmode="decimal" step="0.1" id="in-peso" value="'+pesoPre+'"></div>'+
+      '<div class="field"><label>Plancha (seg)</label><input type="number" inputmode="numeric" id="in-plancha" value="'+pre("plancha")+'" placeholder="0"></div></div>'+
+      '<div class="field-row"><div class="field"><label>Flexiones máx</label><input type="number" inputmode="numeric" id="in-flexiones" value="'+pre("flexiones")+'" placeholder="0"></div>'+
+      '<div class="field"><label>Dominadas máx</label><input type="number" inputmode="numeric" id="in-dominadas" value="'+pre("dominadas")+'" placeholder="0"></div></div>'+
+      '<button class="btn" id="saveMeasure" style="margin-top:8px;">Guardar medición</button>'+
+      '<button class="btn subtle" id="cancelMeasure" style="margin-top:10px;">Cancelar</button>';
+    overlay.classList.add("show");
+    document.getElementById("cancelMeasure").addEventListener("click",closeSheet);
+    document.getElementById("saveMeasure").addEventListener("click",function(){
+      function val(id){var x=document.getElementById(id).value;return x===""?null:Number(x);}
+      // Fusionar: un campo vacío conserva lo ya guardado hoy, nunca lo pisa con null
+      function keep(nv,old){return nv!=null?nv:(old!=null?old:null);}
+      var old=today||{};
+      var entry={date:tk,peso:keep(val("in-peso"),old.peso),flexiones:keep(val("in-flexiones"),old.flexiones),dominadas:keep(val("in-dominadas"),old.dominadas),plancha:keep(val("in-plancha"),old.plancha)};
+      var idx=-1;for(var j=0;j<data.measurements.length;j++){if(data.measurements[j].date===tk){idx=j;break;}}
+      if(idx>=0)data.measurements[idx]=entry;else data.measurements.push(entry);
+      save();renderReadings();renderHistory();closeSheet();toast("Medición guardada");
+    });
+  });
+
+  // Export / Import / Reset
+  document.getElementById("exportBtn").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="estado-fisico-respaldo-"+todayKey()+".json";document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);toast("Respaldo generado");
+  });
+  document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click();});
+  document.getElementById("importFile").addEventListener("change",function(e){
+    var f=e.target.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){try{var o=JSON.parse(r.result);if(!o.measurements||!o.daily)throw 0;data=o;save();renderAll();toast("Respaldo restaurado");}catch(err){toast("Archivo no válido");}};
+    r.readAsText(f);e.target.value="";
+  });
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(confirm("¿Borrar todos los registros? Esto no se puede deshacer.")){data=seed();save();renderAll();toast("Datos reiniciados");}
+  });
+
+  // Nav
+  var navBtns=document.querySelectorAll("nav button");
+  navBtns.forEach(function(b){b.addEventListener("click",function(){
+    navBtns.forEach(function(x){x.classList.remove("active");});b.classList.add("active");
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("active");});
+    document.getElementById("view-"+b.dataset.view).classList.add("active");
+    document.querySelector("main").scrollTop=0;
+  });});
+
+  var toastEl=document.getElementById("toast"),toastT;
+  function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove("show");},1800);}
+
+  function renderAll(){renderChecks();renderStreak();renderReadings();renderHistory();renderExercises();}
+  renderAll();
+
+  // Service worker: cache offline (requiere https o localhost; en file:// no corre)
+  if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
+    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
