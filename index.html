@@ -169,7 +169,7 @@
         <p>Ganar músculo funcional y mantener bienestar físico y mental, de forma sostenible y compatible con la jornada laboral. Sin meta de peso: el peso se mide como tendencia, no como objetivo.</p>
       </div>
 
-      <div class="section-label">Rutina de fuerza · ~10 min</div>
+      <div class="section-label">Rutina de fuerza · 12–15 min</div>
       <div class="card" style="margin-bottom:14px;">
         <p style="margin:0;">La rutina del día te aparece armada en <b style="color:var(--text)">HOY</b>, con el peso que te corresponde usar. Se alternan el día <b style="color:var(--text)">A</b> (empuje) y el <b style="color:var(--text)">B</b> (tirón), uno por día de entrenamiento. Esta lista es la referencia completa: toca cualquier ejercicio para ver cómo se hace.</p>
       </div>
@@ -398,8 +398,15 @@
   }
   function renderWorkout(){
     var tk=todayKey(),day=todayDayPlan(),keys=day==="A"?DAY_A:DAY_B;
-    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al terminarlo y anota peso y repeticiones. La app te dice cuándo subir.</p>'+
-      '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita. <a href="https://www.youtube.com/results?search_query=movilidad+articular+calentamiento+circulos+cadera+hombros+medias+sentadillas" target="_blank" rel="noopener" style="color:var(--amber)">▶ ver ejemplo en video</a></p></div>';
+    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al terminarlo y anota tus repeticiones. El peso ya viene propuesto — solo cámbialo si usaste otro.</p>'+
+      '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita. <a href="https://www.youtube.com/results?search_query=movilidad+articular+calentamiento+circulos+cadera+hombros+medias+sentadillas" target="_blank" rel="noopener" style="color:var(--amber)">▶ ver ejemplo en video</a></p>'+
+      '<div id="wuBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:36px;font-weight:600;color:var(--amber);padding:6px 0 0;"></div>'+
+      '<button class="btn subtle" id="wuBtn" style="margin-top:10px;">▶ Calentar · 2:30 con aviso</button></div>';
+    document.getElementById("wuBtn").addEventListener("click",function(){
+      stopTimer();var n=150,wb=document.getElementById("wuBox");
+      wb.style.display="block";wb.textContent="2:30";
+      mTimer=setInterval(function(){n--;if(n>0){wb.textContent=Math.floor(n/60)+":"+pad(n%60);}else{wb.textContent="¡Listo, a la rutina!";stopTimer();beep();}},1000);
+    });
     var w=data.workouts[tk],wrap=document.getElementById("workout");
     wrap.innerHTML="";
     keys.forEach(function(key){
@@ -507,8 +514,8 @@
       var tk=todayKey(),wd=data.workouts[tk],logged=wd&&wd.ex&&wd.ex[key],s=suggest(key);
       h+='<div class="suggest">'+s.txt+'</div>'+
         '<div id="restBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:40px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
-        '<button class="btn subtle" id="btnRest" style="margin-bottom:6px;">▶ Descanso entre series · 90 s</button>'+
-        '<p style="font-size:12px;color:var(--text-faint);margin-bottom:14px;text-align:center;">En el descanso: de pie o camina suave, sorbo de agua. No elongues ahora.</p>'+
+        '<button class="btn subtle" id="btnRest" style="margin-bottom:6px;">▶ Descanso entre series</button>'+
+        '<p style="font-size:12px;color:var(--text-faint);margin-bottom:14px;text-align:center;">La app elige sola: 60 s con peso liviano (hasta 4 kg), 90 s desde 5 kg. De pie o camina suave, sorbo de agua. No elongues ahora.</p>'+
         '<div class="field"><label>Peso usado por mancuerna (kg)</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
         '<div class="field-row"><div class="field"><label>Serie 1 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
         '<div class="field"><label>Serie 2 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
@@ -521,7 +528,8 @@
     document.getElementById("closeSheet").addEventListener("click",closeSheet);
     if(logMode){
       document.getElementById("btnRest").addEventListener("click",function(){
-        stopTimer();var n=90,rb=document.getElementById("restBox");
+        stopTimer();
+        var wNow=Number(document.getElementById("log-w").value)||0,n=wNow>4.01?90:60,rb=document.getElementById("restBox");
         rb.style.display="block";rb.textContent=n+" s";
         mTimer=setInterval(function(){n--;if(n>0){rb.textContent=n+" s";}else{rb.textContent="¡Serie 2!";stopTimer();beep();}},1000);
       });
