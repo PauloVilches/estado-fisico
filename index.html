@@ -330,6 +330,7 @@
 
   // HOY
   function suppDays(id){var n=0;for(var k in data.daily){if(data.daily[k][id])n++;}return n;}
+  function suppDays30(id){var n=0,d=new Date();for(var i=0;i<30;i++){var k=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());if(data.daily[k]&&data.daily[k][id])n++;d.setDate(d.getDate()-1);}return n;}
   function renderChecks(){
     var tk=todayKey(),day=data.daily[tk]||{},wrap=document.getElementById("checks");
     wrap.innerHTML="";
@@ -339,7 +340,7 @@
       wrap.appendChild(gh);
       g.items.forEach(function(c){
         var on=!!day[c.id],el=document.createElement("div");
-        var nd=suppDays(c.id),acum=nd>0?' · <span style="color:var(--amber)">'+nd+(nd===1?" día":" días")+' acum.</span>':'';
+        var nd=suppDays(c.id),acum=nd>0?' · <span style="color:var(--amber)">'+nd+(nd===1?" día":" días")+' acum. · '+suppDays30(c.id)+'/30 últ. mes</span>':'';
         if(c.cyc&&nd>=c.cyc)acum+=' · <span style="color:var(--danger)">ciclo cumplido ('+c.cyc+'+): evalúa pausar</span>';
         el.className="check"+(on?" on":"");
         el.innerHTML='<div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="label">'+c.label+'<div class="sub">'+c.sub+acum+'</div></div>';
