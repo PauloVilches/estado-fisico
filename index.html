@@ -81,6 +81,10 @@
   .proto-row .pdose{font-size:12.5px;color:var(--text-dim);}
   .ex{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s;}
   .ex:active{background:var(--surface-2);}
+  .ex.done{border-color:var(--done);}
+  .ex.done .ex-sub{color:var(--done);}
+  .test-note{font-size:13px;color:var(--text-dim);margin:-4px 2px 12px;}
+  .suggest{background:var(--surface-2);border:1px solid var(--amber-dim);border-radius:11px;padding:11px 14px;margin-bottom:15px;font-size:13.5px;color:var(--amber);}
   .ex .thumb{width:52px;height:46px;flex-shrink:0;background:var(--bg);border-radius:9px;border:1px solid var(--line);overflow:hidden;}
   .ex .thumb svg{width:100%;height:100%;display:block;}
   .ex .ex-body{flex:1;min-width:0;}
@@ -137,7 +141,10 @@
 
   <main>
     <section class="view active" id="view-hoy">
-      <div class="section-label">Cumplimiento de hoy</div>
+      <div class="section-label">Rutina de hoy · fuerza</div>
+      <div id="dayTag"></div>
+      <div id="workout"></div>
+      <div class="section-label">Suplementos del día</div>
       <div id="checks"></div>
       <div class="streak">
         <div class="num" id="streakNum">0</div>
@@ -146,7 +153,8 @@
     </section>
 
     <section class="view" id="view-progreso">
-      <div class="section-label">Últimas lecturas</div>
+      <div class="section-label">Prueba de avance</div>
+      <p class="test-note" id="testNote"></p>
       <div class="readings" id="readings"></div>
       <button class="btn" id="openMeasure" style="margin-top:16px;">Registrar medición</button>
       <div class="section-label">Historial</div>
@@ -160,9 +168,15 @@
         <p>Ganar músculo funcional y mantener bienestar físico y mental, de forma sostenible y compatible con la jornada laboral. Sin meta de peso: el peso se mide como tendencia, no como objetivo.</p>
       </div>
 
-      <div class="section-label">Rutina de fuerza · ~8 min</div>
+      <div class="section-label">Rutina de fuerza · ~10 min</div>
       <div class="card" style="margin-bottom:14px;">
-        <p style="margin:0;">Alterna <b style="color:var(--text)">A</b> y <b style="color:var(--text)">B</b> día por día. Cada ejercicio: <b style="color:var(--text)">2 series</b>, dejando 1–2 reps en el tanque. Calienta 1 min antes (movilidad suave de caderas y hombros): recién levantado el cuerpo está frío. Toca cualquier ejercicio para ver cómo se hace.</p>
+        <p style="margin:0;">La rutina del día te aparece armada en <b style="color:var(--text)">HOY</b>, con el peso que te corresponde usar. Se alternan el día <b style="color:var(--text)">A</b> (empuje) y el <b style="color:var(--text)">B</b> (tirón), uno por día de entrenamiento. Esta lista es la referencia completa: toca cualquier ejercicio para ver cómo se hace.</p>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <h3>Diccionario básico</h3>
+        <p><b style="color:var(--text)">Repetición:</b> el movimiento completo, una vez (bajar y subir).<br>
+        <b style="color:var(--text)">Serie:</b> una tanda de repeticiones seguidas. "2 series de 8 a 12" = haces entre 8 y 12 repeticiones, descansas 1–2 minutos, y haces la segunda tanda.<br>
+        <b style="color:var(--text)">Dejar 1–2 en el tanque:</b> terminar la serie sintiendo que podrías hacer 1 o 2 más. Nunca llegues a no poder completar el movimiento.</p>
       </div>
       <div class="day-tag">DÍA A · EMPUJE</div>
       <div id="exA"></div>
@@ -170,32 +184,37 @@
       <div id="exB"></div>
       <div class="card" style="margin-top:14px;">
         <h3>La regla que construye músculo</h3>
-        <p>Cuando completes las 12 reps limpias en las dos series, sube el peso la próxima vez. Esa subida gradual —no los minutos— es lo que genera músculo.</p>
+        <p>Ya no tienes que calcularla tú: registra peso y repeticiones al terminar cada ejercicio en HOY, y la app te dirá cuándo subir al siguiente escalón. Esa subida gradual —no los minutos que le dediques— es lo que genera músculo.</p>
       </div>
 
-      <div class="section-label">Protocolo de suplementos</div>
-      <div class="card proto">
-        <div class="proto-row"><div><div class="pname">Melena de León</div><div class="pdose">hongo · cognición</div></div><div class="pwhen">8:30 · café</div></div>
-        <div class="proto-row"><div><div class="pname">Cordyceps</div><div class="pdose">hongo · energía</div></div><div class="pwhen">8:30 · café</div></div>
-        <div class="proto-row"><div><div class="pname">Panax Ginseng + Ginkgo</div><div class="pdose">concentrado</div></div><div class="pwhen">8:30 · café</div></div>
-        <div class="proto-row"><div><div class="pname">Vitamina D</div><div class="pdose">la del trabajo · con comida (grasa)</div></div><div class="pwhen">12:30 · almuerzo</div></div>
-        <div class="proto-row"><div><div class="pname">Creatina Creapure</div><div class="pdose">5 g · en el café</div></div><div class="pwhen">15:00 · café</div></div>
-        <div class="proto-row"><div><div class="pname">Proteína Isolate</div><div class="pdose">1 scoop</div></div><div class="pwhen">15:00 · café</div></div>
-        <div class="proto-row"><div><div class="pname">Magnesio</div><div class="pdose">descanso · sueño</div></div><div class="pwhen">noche · casa</div></div>
+      <div class="section-label">Salud y seguridad</div>
+      <div class="card">
+        <h3>Entrenar recién levantado</h3>
+        <p>Con una rutina corta y sin llegar al límite, entrenar antes del desayuno está bien. Toma un vaso de agua al despertar. Si un día sientes mareo o debilidad, come algo chico antes (una fruta) y no exijas ese día.</p>
+      </div>
+      <div class="card">
+        <h3>Columna en la mañana</h3>
+        <p>En la primera hora tras despertar la columna es más vulnerable a la flexión. Calienta 2–3 minutos siempre (círculos de cadera, hombros, media sentadilla sin peso), y en el peso muerto rumano usa menos peso que en el resto: técnica primero.</p>
+      </div>
+      <div class="card">
+        <h3>Regla del dolor</h3>
+        <p>Ardor muscular parejo durante la serie = normal. Dolor agudo, punzante, o que corre hacia el codo o por la pierna = detén ese ejercicio por hoy y anótalo. Si se repite en cada sesión, evalúalo con un kinesiólogo o médico antes de seguir cargándolo.</p>
+      </div>
+      <div class="card">
+        <h3>El sueño es la mitad del resultado</h3>
+        <p>El músculo se construye durmiendo, no levantando: la rutina solo da la orden, la reparación ocurre en el sueño profundo. Con menos de 6 horas el avance será lento aunque entrenes perfecto. Cualquier mejora acá vale más que un ejercicio extra.</p>
       </div>
 
       <div class="section-label">Equipo</div>
       <div class="card">
         <div class="buy-row"><span>Mancuernas York Spinlock 20 kg</span><span class="price">2× barra 35 cm</span></div>
         <div class="buy-row"><span>Discos 1" (kg)</span><span class="price">4×0,5 · 5×1,25 · 4×2,5</span></div>
-        <div class="buy-row"><span>Barra + 2 collares</span><span class="price">~1,5 kg*</span></div>
-        <div class="buy-row"><span>Carga máx por mancuerna</span><span class="price">~10 kg</span></div>
-        <div class="buy-row"><span>Accesorios</span><span class="price">dominadas · saco</span></div>
-      </div>
+        <div class="buy-row"><span>Barra + 2 collares</span><span class="price">1,46 kg ✓ pesado</span></div>
+        <div class="buy-row"><span>Carga máx por mancuerna</span><span class="price">~10 kg</span></div>      </div>
       <div class="card">
         <h3>Escalera de cargas · por mancuerna</h3>
         <p style="font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--amber);font-size:14px;margin:6px 0 8px;">1,5 → 2,5 → 4 → 5 → 6,5 → 7,5 → 9 → 10 kg</p>
-        <p>Al completar las 12 reps limpias en las dos series, pasa al escalón siguiente. Alcanza para armar las dos mancuernas iguales en cualquier escalón. *Valores nominales; pendiente pesar la barra armada.</p>
+        <p>Al completar las reps objetivo en las dos series, la app te pasa al escalón siguiente. Alcanza para armar las dos mancuernas iguales en cualquier escalón. Barra pesada real: 1,46 kg — cada escalón queda ~0,04 kg bajo lo indicado, despreciable.</p>
       </div>
 
       <div class="section-label">Respaldo de datos</div>
@@ -209,7 +228,7 @@
         <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
       </div>
       <div style="height:6px;"></div>
-      <p style="text-align:center;font-size:11px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;">uso personal · v3</p>
+      <p style="text-align:center;font-size:11px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;">uso personal · v4</p>
     </section>
   </main>
 
@@ -241,55 +260,54 @@
   var KEY="estadofisico_v2";
 
   var GROUPS=[
-    {time:"~8:30 · café",name:"Mañana",items:[
-      {id:"rutina",label:"Rutina · 7 min",sub:"antes de la ducha"},
-      {id:"melena",label:"Melena de León",sub:""},
-      {id:"cordyceps",label:"Cordyceps",sub:""},
-      {id:"ginkgo",label:"Ginseng + Ginkgo",sub:"concentrado"}
+    {time:"8:30",name:"Mañana",items:[
+      {id:"melena",label:"Melena de León",sub:"8:30 · con el café"},
+      {id:"cordyceps",label:"Cordyceps",sub:"8:30 · con el café"},
+      {id:"ginkgo",label:"Ginseng + Ginkgo",sub:"8:30 · concentrado"}
     ]},
-    {time:"~12:30 · almuerzo",name:"Mediodía · trabajo",items:[
-      {id:"vitd",label:"Vitamina D",sub:"la del trabajo · con comida"}
+    {time:"12:30",name:"Mediodía · trabajo",items:[
+      {id:"vitd",label:"Vitamina D",sub:"12:30 · con el almuerzo (grasa)"}
     ]},
-    {time:"~15:00 · café",name:"Tarde",items:[
-      {id:"creatina",label:"Creatina",sub:"5 g, en el café"},
-      {id:"proteina",label:"Proteína",sub:"1 scoop"}
+    {time:"15:00",name:"Tarde",items:[
+      {id:"creatina",label:"Creatina",sub:"15:00 · 5 g en el café"},
+      {id:"proteina",label:"Proteína",sub:"15:00 · 1 scoop"}
     ]},
-    {time:"noche · casa",name:"Noche",items:[
-      {id:"magnesio",label:"Magnesio",sub:"al llegar"}
+    {time:"noche",name:"Noche",items:[
+      {id:"magnesio",label:"Magnesio",sub:"al llegar a casa · para el sueño"}
     ]}
   ];
 
   var METRICS=[
     {id:"peso",label:"Peso",unit:"kg"},
     {id:"flexiones",label:"Flexiones",unit:"máx"},
-    {id:"dominadas",label:"Dominadas",unit:"máx"},
+    {id:"sillas",label:"Sentadillas",unit:"en 30 s"},
     {id:"plancha",label:"Plancha",unit:"seg"}
   ];
 
   // Exercise illustrations (own SVG, no copyright, work offline)
   var G='<line class="fig-ground" x1="20" y1="186" x2="220" y2="186"/>';
   var EXERCISES={
-    goblet:{name:"Sentadilla goblet",sub:"cuádriceps, glúteo",sets:"2×8–12",
+    goblet:{name:"Sentadilla goblet",sub:"cuádriceps, glúteo",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<circle class="fig-head" cx="120" cy="34" r="14"/><path class="fig" d="M120 48 L120 104"/><path class="fig" d="M99 62 L110 90 M141 62 L130 90"/><circle class="fig-weight" cx="120" cy="92" r="11"/><path class="fig" d="M105 104 L86 140 L90 184 M135 104 L154 140 L150 184"/>',
       steps:["De pie, pies un poco más anchos que los hombros, puntas levemente hacia afuera.","Sostén una mancuerna en vertical, pegada al pecho con ambas manos (como un cáliz).","Baja doblando rodillas y caderas, pecho erguido, hasta que los muslos queden casi paralelos al suelo.","Sube empujando con los talones hasta quedar de pie. Esa es 1 repetición."],
       video:"sentadilla goblet con mancuerna tecnica"},
-    press_hombro:{name:"Press de hombros de pie",sub:"hombros, tríceps",sets:"2×8–12",
+    press_hombro:{name:"Press de hombros de pie",sub:"hombros, tríceps",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<circle class="fig-head" cx="120" cy="58" r="14"/><path class="fig" d="M120 72 L120 128"/><path class="fig" d="M100 84 L92 44 M140 84 L148 44"/><rect class="fig-weight" x="84" y="36" width="18" height="9" rx="2"/><rect class="fig-weight" x="138" y="36" width="18" height="9" rx="2"/><path class="fig" d="M120 128 L106 184 M120 128 L134 184"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
       steps:["De pie, una mancuerna en cada mano a la altura de los hombros, palmas mirando adelante.","Codos apuntando hacia abajo y un poco adelante.","Empuja las mancuernas hacia arriba hasta estirar los brazos sobre la cabeza, sin arquear la espalda.","Baja controlando hasta los hombros. Esa es 1 repetición."],
       video:"press militar mancuernas de pie tecnica"},
-    press_pecho:{name:"Press de pecho en suelo",sub:"pecho, tríceps · o flexiones",sets:"2×8–12",
+    press_pecho:{name:"Press de pecho en suelo",sub:"pecho, tríceps · o flexiones",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<line class="fig-ground" x1="20" y1="150" x2="220" y2="150"/><circle class="fig-head" cx="56" cy="138" r="12"/><path class="fig" d="M68 142 L150 142"/><path class="fig" d="M150 142 L168 120 L182 148"/><path class="fig" d="M86 140 L96 108 M96 108 L94 92"/><rect class="fig-weight" x="84" y="84" width="20" height="9" rx="2"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
       steps:["Acostado de espaldas en el suelo o colchoneta, rodillas dobladas, pies apoyados.","Una mancuerna en cada mano a la altura del pecho, codos en el suelo a ~45°.","Empuja las mancuernas hacia el techo hasta estirar los brazos.","Baja lento hasta que los codos toquen el suelo. Esa es 1 repetición.","Sin mancuernas: hazlo como flexiones, manos bajo los hombros, cuerpo recto."],
       video:"floor press mancuernas tecnica"},
-    peso_muerto:{name:"Peso muerto rumano",sub:"isquios, glúteo, lumbar",sets:"2×8–12",
+    peso_muerto:{name:"Peso muerto rumano",sub:"isquios, glúteo, lumbar",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<circle class="fig-head" cx="72" cy="52" r="13"/><path class="fig" d="M80 62 L146 108"/><path class="fig" d="M146 108 L150 150 L144 184"/><path class="fig" d="M84 66 L92 122"/><rect class="fig-weight" x="82" y="124" width="20" height="9" rx="2"/><path class="fig-arrow" d="M170 90 Q182 110 172 134"/>',
       steps:["De pie, mancuernas frente a los muslos, rodillas apenas dobladas (casi rectas).","Lleva las caderas hacia atrás bajando el tronco, espalda recta (no curvada).","Las mancuernas bajan pegadas a las piernas hasta media canilla; sentirás estiramiento atrás del muslo.","Vuelve subiendo apretando los glúteos. Peso moderado, sobre todo en la mañana."],
       video:"peso muerto rumano mancuernas tecnica espalda recta"},
-    remo:{name:"Remo con mancuerna",sub:"espalda, bíceps",sets:"2×10/lado",
+    remo:{name:"Remo con mancuerna",sub:"espalda, bíceps",sets:"2 series · 10 por lado",top:10,side:true,
       svg:G+'<circle class="fig-head" cx="66" cy="64" r="13"/><path class="fig" d="M76 72 L150 104"/><path class="fig" d="M150 104 L156 150 L150 184"/><path class="fig" d="M88 78 L96 124"/><rect class="fig-weight" x="86" y="126" width="20" height="9" rx="2"/><path class="fig" d="M112 90 L128 100 L120 116"/><path class="fig-arrow" d="M138 130 L132 112 M126 120 L133 110 L140 118"/>',
       steps:["Inclina el tronco hacia adelante con espalda recta; apoya una mano en una silla o tu rodilla.","Con la otra mano sostén la mancuerna colgando hacia el suelo.","Tira la mancuerna hacia tu cadera, llevando el codo hacia atrás y apretando la espalda.","Baja controlando. Completa las reps de un lado y cambia."],
       video:"remo con mancuerna a una mano tecnica"},
-    zancada:{name:"Zancada o búlgara",sub:"piernas, unilateral",sets:"2×8/lado",
+    zancada:{name:"Zancada o búlgara",sub:"piernas, un lado a la vez",sets:"2 series · 8 por lado",top:8,side:true,
       svg:G+'<circle class="fig-head" cx="112" cy="42" r="13"/><path class="fig" d="M112 55 L112 112"/><path class="fig" d="M112 112 L146 142 L146 184"/><path class="fig" d="M112 112 L82 150 L72 184"/><path class="fig" d="M100 64 L94 108 M124 64 L132 108"/><rect class="fig-weight" x="86" y="106" width="16" height="8" rx="2"/><rect class="fig-weight" x="126" y="106" width="16" height="8" rx="2"/>',
       steps:["De pie, una mancuerna en cada mano a los costados.","Da un paso largo hacia adelante con una pierna.","Baja doblando ambas rodillas hasta que la de atrás casi toque el suelo; tronco erguido.","Empuja con la pierna de adelante para volver. Completa el lado y cambia.","Variante búlgara: apoya el empeine de atrás en una silla para más intensidad."],
       video:"zancada con mancuernas tecnica"}
@@ -298,8 +316,8 @@
   var DAY_B=["peso_muerto","remo","zancada"];
 
   var data=load();
-  function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return seed();}
-  function seed(){return{daily:{},measurements:[]};}
+  function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(!o.workouts)o.workouts={};return o;}}catch(e){}return seed();}
+  function seed(){return{daily:{},measurements:[],workouts:{}};}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){toast("No se pudo guardar");}}
 
   function todayKey(){var n=new Date();return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate());}
@@ -338,6 +356,74 @@
     document.getElementById("streakNum").textContent=n;
   }
 
+  // RUTINA DE HOY — registro por ejercicio y progresión automática
+  var LADDER=[1.5,2.5,4,5,6.5,7.5,9,10]; // kg por mancuerna, con tus discos
+  function fmtKg(v){return (""+v).replace(".",",");}
+  function todayDayPlan(){
+    var tk=todayKey();
+    if(data.workouts[tk])return data.workouts[tk].day;
+    var dates=Object.keys(data.workouts).sort();
+    for(var i=dates.length-1;i>=0;i--){if(dates[i]<tk)return data.workouts[dates[i]].day==="A"?"B":"A";}
+    return "A";
+  }
+  function lastLog(key){
+    var tk=todayKey(),dates=Object.keys(data.workouts).sort();
+    for(var i=dates.length-1;i>=0;i--){
+      if(dates[i]>=tk)continue;
+      var w=data.workouts[dates[i]];
+      if(w.ex&&w.ex[key])return w.ex[key];
+    }
+    return null;
+  }
+  function lastLogAny(key){ // incluye hoy: para calcular los pesos de mañana
+    var dates=Object.keys(data.workouts).sort();
+    for(var i=dates.length-1;i>=0;i--){var w=data.workouts[dates[i]];if(w.ex&&w.ex[key])return w.ex[key];}
+    return null;
+  }
+  function nextStep(w){for(var j=0;j<LADDER.length;j++){if(LADDER[j]>w+0.01)return LADDER[j];}return null;}
+  function suggest(key){
+    var e=EXERCISES[key],last=lastLog(key);
+    if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg y aprende el movimiento"};
+    if(last.r1>=e.top&&last.r2>=e.top){
+      var nw=nextStep(last.w);
+      if(nw)return{w:nw,txt:"Lograste "+last.r1+"+"+last.r2+" reps → hoy sube a "+fmtKg(nw)+" kg"};
+      return{w:last.w,txt:"Estás en el tope de tus discos ("+fmtKg(last.w)+" kg). Baja la velocidad o suma reps"};
+    }
+    return{w:last.w,txt:"Sigue con "+fmtKg(last.w)+" kg hasta lograr "+e.top+"+"+e.top+" reps"};
+  }
+  function renderWorkout(){
+    var tk=todayKey(),day=todayDayPlan(),keys=day==="A"?DAY_A:DAY_B;
+    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al terminarlo y anota peso y repeticiones. La app te dice cuándo subir.</p>'+
+      '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita.</p></div>';
+    var w=data.workouts[tk],wrap=document.getElementById("workout");
+    wrap.innerHTML="";
+    keys.forEach(function(key){
+      var e=EXERCISES[key],logged=w&&w.ex&&w.ex[key],s=suggest(key);
+      var el=document.createElement("div");
+      el.className="ex"+(logged?" done":"");
+      el.innerHTML='<div class="thumb"><svg viewBox="0 0 240 200">'+e.svg+'</svg></div>'+
+        '<div class="ex-body"><div class="ex-name">'+e.name+'</div><div class="ex-sub">'+(logged?("✓ hecho · "+fmtKg(logged.w)+" kg · "+logged.r1+"+"+logged.r2+" reps"):s.txt)+'</div></div>'+
+        '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+      el.addEventListener("click",function(){openExercise(key,true);});
+      wrap.appendChild(el);
+    });
+    // Rutina completa → decir qué dejar armado para mañana
+    var wt=data.workouts[tk];
+    if(wt&&keys.every(function(k){return wt.ex&&wt.ex[k];})){
+      var tday=wt.day==="A"?"B":"A",tkeys=tday==="A"?DAY_A:DAY_B;
+      var parts=tkeys.map(function(k){
+        var e=EXERCISES[k],last=lastLogAny(k),pw;
+        if(!last)pw=LADDER[0];
+        else if(last.r1>=e.top&&last.r2>=e.top)pw=nextStep(last.w)||last.w;
+        else pw=last.w;
+        return e.name+" "+fmtKg(pw);
+      });
+      var c=document.createElement("div");c.className="card";c.style.marginTop="4px";
+      c.innerHTML='<h3>Deja listo esta noche</h3><p>Mañana toca <b style="color:var(--text)">Día '+tday+'</b>. Deja las mancuernas armadas en (kg por mancuerna): '+parts.join(" · ")+'.</p>';
+      wrap.appendChild(c);
+    }
+  }
+
   // PROGRESO
   function sortedM(){return data.measurements.slice().sort(function(a,b){return a.date<b.date?-1:1;});}
   function sparkline(vals,w,h){
@@ -361,12 +447,20 @@
       el.innerHTML='<div class="g-label">'+m.label+'</div><div class="g-val">'+(v!=null?v:"–")+'<span class="g-unit">'+m.unit+'</span></div>'+sparkline(serie,120,26)+'<div class="g-delta '+dcls+'">'+(delta||"&nbsp;")+'</div>';
       wrap.appendChild(el);
     });
+    // aviso de cuándo toca la prueba
+    var note="Esto NO se anota por ejercicio: es tu foto de avance, cada 2–4 semanas. Peso en ayunas, flexiones máx, sentadillas a una silla en 30 s (parándote y sentándote sin usar las manos) y plancha.";
+    if(ms.length===0){note+=" Haz la primera cuando quieras.";}
+    else{
+      var days=Math.floor((Date.now()-new Date(ms[ms.length-1].date+"T12:00:00").getTime())/864e5);
+      note+=days>=14?(" Ya toca: han pasado "+days+" días."):(" Próxima: en ~"+(14-days)+" días.");
+    }
+    document.getElementById("testNote").textContent=note;
   }
   function renderHistory(){
     var ms=sortedM().reverse(),wrap=document.getElementById("history");
     if(ms.length===0){wrap.innerHTML='<div class="empty">Aún no hay mediciones.</div>';return;}
-    var h='<div class="hist"><div class="hist-row head"><span class="d">Fecha</span><span>Peso</span><span>Flex</span><span>Dom</span><span>Planc</span></div>';
-    ms.forEach(function(m){h+='<div class="hist-row"><span class="d">'+fmtShort(m.date)+'</span><span>'+(m.peso!=null?m.peso:"–")+'</span><span>'+(m.flexiones!=null?m.flexiones:"–")+'</span><span>'+(m.dominadas!=null?m.dominadas:"–")+'</span><span>'+(m.plancha!=null?m.plancha:"–")+'</span></div>';});
+    var h='<div class="hist"><div class="hist-row head"><span class="d">Fecha</span><span>Peso</span><span>Flex</span><span>Sent</span><span>Planc</span></div>';
+    ms.forEach(function(m){h+='<div class="hist-row"><span class="d">'+fmtShort(m.date)+'</span><span>'+(m.peso!=null?m.peso:"–")+'</span><span>'+(m.flexiones!=null?m.flexiones:"–")+'</span><span>'+(m.sillas!=null?m.sillas:"–")+'</span><span>'+(m.plancha!=null?m.plancha:"–")+'</span></div>';});
     wrap.innerHTML=h+'</div>';
   }
 
@@ -381,26 +475,61 @@
     }
     document.getElementById("exA").innerHTML=DAY_A.map(row).join("");
     document.getElementById("exB").innerHTML=DAY_B.map(row).join("");
-    document.querySelectorAll(".ex").forEach(function(el){
-      el.addEventListener("click",function(){openExercise(el.dataset.ex);});
+    document.querySelectorAll("#exA .ex, #exB .ex").forEach(function(el){
+      el.addEventListener("click",function(){openExercise(el.dataset.ex,false);});
     });
   }
-  function openExercise(key){
+  function openExercise(key,logMode){
     var e=EXERCISES[key];
     var steps=e.steps.map(function(s){return '<div class="step">'+s+'</div>';}).join("");
     var yt="https://www.youtube.com/results?search_query="+encodeURIComponent(e.video);
-    sheet.innerHTML='<h2>'+e.name+'</h2><div class="sub">'+e.sub+' · '+e.sets+'</div>'+
+    var h='<h2>'+e.name+'</h2><div class="sub">'+e.sub+' · '+e.sets+' · descansa 1–2 min entre series</div>'+
       '<div class="ex-illus"><svg viewBox="0 0 240 200">'+e.svg+'</svg></div>'+
-      '<div class="steps">'+steps+'</div>'+
-      '<a class="btn ghost" href="'+yt+'" target="_blank" rel="noopener" style="text-decoration:none;">▶ Ver video del movimiento</a>'+
+      '<div class="steps">'+steps+'</div>';
+    if(logMode){
+      var tk=todayKey(),wd=data.workouts[tk],logged=wd&&wd.ex&&wd.ex[key],s=suggest(key);
+      h+='<div class="suggest">'+s.txt+'</div>'+
+        '<div id="restBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:40px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
+        '<button class="btn subtle" id="btnRest" style="margin-bottom:14px;">▶ Descanso entre series · 90 s</button>'+
+        '<div class="field"><label>Peso usado por mancuerna (kg)</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
+        '<div class="field-row"><div class="field"><label>Reps serie 1'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
+        '<div class="field"><label>Reps serie 2'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
+        '<button class="btn" id="saveLog">Guardar ejercicio</button>';
+    }
+    h+='<a class="btn ghost" href="'+yt+'" target="_blank" rel="noopener" style="text-decoration:none;margin-top:10px;">▶ Ver video del movimiento</a>'+
       '<button class="btn subtle" id="closeSheet" style="margin-top:10px;">Cerrar</button>';
+    sheet.innerHTML=h;
     overlay.classList.add("show");
     document.getElementById("closeSheet").addEventListener("click",closeSheet);
+    if(logMode){
+      document.getElementById("btnRest").addEventListener("click",function(){
+        stopTimer();var n=90,rb=document.getElementById("restBox");
+        rb.style.display="block";rb.textContent=n+" s";
+        mTimer=setInterval(function(){n--;if(n>0){rb.textContent=n+" s";}else{rb.textContent="¡Serie 2!";stopTimer();beep();}},1000);
+      });
+      document.getElementById("saveLog").addEventListener("click",function(){
+        var wv=Number(document.getElementById("log-w").value),
+            r1=Number(document.getElementById("log-r1").value),
+            r2=Number(document.getElementById("log-r2").value);
+        if(!wv||wv<=0){toast("Falta el peso usado");return;}
+        if(!r1&&!r2){toast("Anota al menos una serie");return;}
+        var tk2=todayKey();
+        if(!data.workouts[tk2])data.workouts[tk2]={day:todayDayPlan(),ex:{}};
+        data.workouts[tk2].ex[key]={w:wv,r1:r1||0,r2:r2||0};
+        var dayKeys=data.workouts[tk2].day==="A"?DAY_A:DAY_B;
+        var all=dayKeys.every(function(k){return data.workouts[tk2].ex[k];});
+        if(all){var dd=data.daily[tk2]||{};dd.rutina=true;data.daily[tk2]=dd;}
+        save();renderWorkout();renderStreak();closeSheet();
+        toast(all?"Rutina de hoy completa":"Ejercicio guardado");
+      });
+    }
   }
 
   // Measure
-  var overlay=document.getElementById("overlay"),sheet=document.getElementById("sheetContent");
-  function closeSheet(){overlay.classList.remove("show");}
+  var overlay=document.getElementById("overlay"),sheet=document.getElementById("sheetContent"),mTimer=null;
+  function stopTimer(){if(mTimer){clearInterval(mTimer);mTimer=null;}}
+  function beep(){try{var ac=new (window.AudioContext||window.webkitAudioContext)(),o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.value=.25;o.start();setTimeout(function(){o.stop();ac.close();},350);}catch(e){}}
+  function closeSheet(){overlay.classList.remove("show");stopTimer();}
   overlay.addEventListener("click",function(e){if(e.target===overlay)closeSheet();});
 
   document.getElementById("openMeasure").addEventListener("click",function(){
@@ -413,17 +542,36 @@
       '<div class="field-row"><div class="field"><label>Peso (kg)</label><input type="number" inputmode="decimal" step="0.1" id="in-peso" value="'+pesoPre+'"></div>'+
       '<div class="field"><label>Plancha (seg)</label><input type="number" inputmode="numeric" id="in-plancha" value="'+pre("plancha")+'" placeholder="0"></div></div>'+
       '<div class="field-row"><div class="field"><label>Flexiones máx</label><input type="number" inputmode="numeric" id="in-flexiones" value="'+pre("flexiones")+'" placeholder="0"></div>'+
-      '<div class="field"><label>Dominadas máx</label><input type="number" inputmode="numeric" id="in-dominadas" value="'+pre("dominadas")+'" placeholder="0"></div></div>'+
+      '<div class="field"><label>Sentadillas a silla en 30 s (sin manos)</label><input type="number" inputmode="numeric" id="in-sillas" value="'+pre("sillas")+'" placeholder="0"></div></div>'+
+      '<div id="timerBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:46px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
+      '<div class="btn-row" style="margin-top:0;margin-bottom:14px;"><button class="btn subtle" id="btn30">▶ Silla · 30 s</button><button class="btn subtle" id="btnPl">▶ Plancha · crono</button></div>'+
       '<button class="btn" id="saveMeasure" style="margin-top:8px;">Guardar medición</button>'+
       '<button class="btn subtle" id="cancelMeasure" style="margin-top:10px;">Cancelar</button>';
     overlay.classList.add("show");
     document.getElementById("cancelMeasure").addEventListener("click",closeSheet);
+    // Cronómetros: cuenta regresiva 30 s (silla) y crono de plancha que anota solo
+    var tb=document.getElementById("timerBox"),bpl=document.getElementById("btnPl"),plT0=null;
+    document.getElementById("btn30").addEventListener("click",function(){
+      stopTimer();plT0=null;bpl.textContent="▶ Plancha · crono";
+      var n=30;tb.style.display="block";tb.textContent=n;
+      mTimer=setInterval(function(){n--;if(n>0){tb.textContent=n;}else{tb.textContent="¡30 s! Anota";stopTimer();beep();}},1000);
+    });
+    bpl.addEventListener("click",function(){
+      if(plT0==null){
+        stopTimer();plT0=Date.now();tb.style.display="block";tb.textContent="0";bpl.textContent="■ Detener y anotar";
+        mTimer=setInterval(function(){tb.textContent=Math.floor((Date.now()-plT0)/1000);},250);
+      }else{
+        stopTimer();var secs=Math.round((Date.now()-plT0)/1000);
+        document.getElementById("in-plancha").value=secs;tb.textContent=secs+" s";
+        plT0=null;bpl.textContent="▶ Plancha · crono";beep();
+      }
+    });
     document.getElementById("saveMeasure").addEventListener("click",function(){
       function val(id){var x=document.getElementById(id).value;return x===""?null:Number(x);}
       // Fusionar: un campo vacío conserva lo ya guardado hoy, nunca lo pisa con null
       function keep(nv,old){return nv!=null?nv:(old!=null?old:null);}
       var old=today||{};
-      var entry={date:tk,peso:keep(val("in-peso"),old.peso),flexiones:keep(val("in-flexiones"),old.flexiones),dominadas:keep(val("in-dominadas"),old.dominadas),plancha:keep(val("in-plancha"),old.plancha)};
+      var entry={date:tk,peso:keep(val("in-peso"),old.peso),flexiones:keep(val("in-flexiones"),old.flexiones),sillas:keep(val("in-sillas"),old.sillas),plancha:keep(val("in-plancha"),old.plancha)};
       var idx=-1;for(var j=0;j<data.measurements.length;j++){if(data.measurements[j].date===tk){idx=j;break;}}
       if(idx>=0)data.measurements[idx]=entry;else data.measurements.push(entry);
       save();renderReadings();renderHistory();closeSheet();toast("Medición guardada");
@@ -439,7 +587,7 @@
   document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click();});
   document.getElementById("importFile").addEventListener("change",function(e){
     var f=e.target.files[0];if(!f)return;var r=new FileReader();
-    r.onload=function(){try{var o=JSON.parse(r.result);if(!o.measurements||!o.daily)throw 0;data=o;save();renderAll();toast("Respaldo restaurado");}catch(err){toast("Archivo no válido");}};
+    r.onload=function(){try{var o=JSON.parse(r.result);if(!o.measurements||!o.daily)throw 0;if(!o.workouts)o.workouts={};data=o;save();renderAll();toast("Respaldo restaurado");}catch(err){toast("Archivo no válido");}};
     r.readAsText(f);e.target.value="";
   });
   document.getElementById("resetBtn").addEventListener("click",function(){
@@ -458,7 +606,7 @@
   var toastEl=document.getElementById("toast"),toastT;
   function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove("show");},1800);}
 
-  function renderAll(){renderChecks();renderStreak();renderReadings();renderHistory();renderExercises();}
+  function renderAll(){renderWorkout();renderChecks();renderStreak();renderReadings();renderHistory();renderExercises();}
   renderAll();
 
   // Service worker: cache offline (requiere https o localhost; en file:// no corre)

@@ -1,7 +1,7 @@
 /* Estado Físico · service worker v3
    HTML: red primero (para recibir actualizaciones), caché de respaldo offline.
    Estáticos (fuentes, íconos, manifest): caché primero. */
-var CACHE = "estadofisico-v3";
+var CACHE = "estadofisico-v4";
 var ASSETS = [
   "./",
   "./index.html",
