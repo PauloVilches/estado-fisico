@@ -398,12 +398,12 @@
   }
   function renderWorkout(){
     var tk=todayKey(),day=todayDayPlan(),keys=day==="A"?DAY_A:DAY_B;
-    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al terminarlo y anota tus repeticiones. El peso ya viene propuesto — solo cámbialo si usaste otro.</p>'+
+    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al empezarlo: adentro está el descanso cronometrado. Al terminar anota tus reps de cada serie y guarda — el peso ya viene propuesto.</p>'+
       '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita. <a href="https://www.youtube.com/results?search_query=movilidad+articular+calentamiento+circulos+cadera+hombros+medias+sentadillas" target="_blank" rel="noopener" style="color:var(--amber)">▶ ver ejemplo en video</a></p>'+
       '<div id="wuBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:36px;font-weight:600;color:var(--amber);padding:6px 0 0;"></div>'+
       '<button class="btn subtle" id="wuBtn" style="margin-top:10px;">▶ Calentar · 2:30 con aviso</button></div>';
     document.getElementById("wuBtn").addEventListener("click",function(){
-      stopTimer();var n=150,wb=document.getElementById("wuBox");
+      stopTimer();keepAwake();var n=150,wb=document.getElementById("wuBox");
       wb.style.display="block";wb.textContent="2:30";
       mTimer=setInterval(function(){n--;if(n>0){wb.textContent=Math.floor(n/60)+":"+pad(n%60);}else{wb.textContent="¡Listo, a la rutina!";stopTimer();beep();}},1000);
     });
@@ -528,7 +528,7 @@
     document.getElementById("closeSheet").addEventListener("click",closeSheet);
     if(logMode){
       document.getElementById("btnRest").addEventListener("click",function(){
-        stopTimer();
+        stopTimer();keepAwake();
         var wNow=Number(document.getElementById("log-w").value)||0,n=wNow>4.01?90:60,rb=document.getElementById("restBox");
         rb.style.display="block";rb.textContent=n+" s";
         mTimer=setInterval(function(){n--;if(n>0){rb.textContent=n+" s";}else{rb.textContent="¡Serie 2!";stopTimer();beep();}},1000);
@@ -554,6 +554,8 @@
   // Measure
   var overlay=document.getElementById("overlay"),sheet=document.getElementById("sheetContent"),mTimer=null;
   function stopTimer(){if(mTimer){clearInterval(mTimer);mTimer=null;}}
+  var wakeL=null;
+  function keepAwake(){try{if(navigator.wakeLock&&!wakeL){navigator.wakeLock.request("screen").then(function(l){wakeL=l;l.addEventListener("release",function(){wakeL=null;});});}}catch(e){}}
   function beep(){try{var ac=new (window.AudioContext||window.webkitAudioContext)(),o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.value=.25;o.start();setTimeout(function(){o.stop();ac.close();},350);}catch(e){}}
   function closeSheet(){overlay.classList.remove("show");stopTimer();}
   overlay.addEventListener("click",function(e){if(e.target===overlay)closeSheet();});
@@ -578,13 +580,13 @@
     // Cronómetros: cuenta regresiva 30 s (silla) y crono de plancha que anota solo
     var tb=document.getElementById("timerBox"),bpl=document.getElementById("btnPl"),plT0=null;
     document.getElementById("btn30").addEventListener("click",function(){
-      stopTimer();plT0=null;bpl.textContent="▶ Plancha · crono";
+      stopTimer();keepAwake();plT0=null;bpl.textContent="▶ Plancha · crono";
       var n=30;tb.style.display="block";tb.textContent=n;
       mTimer=setInterval(function(){n--;if(n>0){tb.textContent=n;}else{tb.textContent="¡30 s! Anota";stopTimer();beep();}},1000);
     });
     bpl.addEventListener("click",function(){
       if(plT0==null){
-        stopTimer();plT0=Date.now();tb.style.display="block";tb.textContent="0";bpl.textContent="■ Detener y anotar";
+        stopTimer();keepAwake();plT0=Date.now();tb.style.display="block";tb.textContent="0";bpl.textContent="■ Detener y anotar";
         mTimer=setInterval(function(){tb.textContent=Math.floor((Date.now()-plT0)/1000);},250);
       }else{
         stopTimer();var secs=Math.round((Date.now()-plT0)/1000);
