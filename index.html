@@ -461,9 +461,10 @@
     });
     // aviso de cuándo toca la prueba
     var note="Esto NO se anota por ejercicio: es tu foto de avance, cada 2–4 semanas. Peso en ayunas, flexiones máx, sentadillas a una silla en 30 s (parándote y sentándote sin usar las manos) y plancha.";
-    if(ms.length===0){note+=" Haz la primera cuando quieras.";}
+    var lastT=null;ms.forEach(function(m){if(m.flexiones!=null||m.sillas!=null||m.plancha!=null)lastT=m.date;});
+    if(!lastT){note+=" Aún no haces la primera: hoy mismo sirve.";}
     else{
-      var days=Math.floor((Date.now()-new Date(ms[ms.length-1].date+"T12:00:00").getTime())/864e5);
+      var days=Math.floor((Date.now()-new Date(lastT+"T12:00:00").getTime())/864e5);
       note+=days>=14?(" Ya toca: han pasado "+days+" días."):(" Próxima: en ~"+(14-days)+" días.");
     }
     document.getElementById("testNote").textContent=note;
