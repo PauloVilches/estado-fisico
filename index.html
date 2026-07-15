@@ -149,7 +149,7 @@
       <div id="testAlert"></div>
       <div class="streak">
         <div class="num" id="streakNum">0</div>
-        <div class="txt">días seguidos<br>con rutina hecha</div>
+        <div class="txt">días de rutina seguidos<br>(el domingo libre no corta)</div>
       </div>
     </section>
 
@@ -160,6 +160,10 @@
       <button class="btn" id="openMeasure" style="margin-top:16px;">Registrar medición</button>
       <div class="section-label">Historial</div>
       <div id="history"></div>
+      <div class="section-label">Cargas por ejercicio</div>
+      <div id="loadProg"></div>
+      <div class="section-label">Sesiones de fuerza</div>
+      <div id="workoutHist"></div>
     </section>
 
     <section class="view" id="view-plan">
@@ -355,7 +359,7 @@
     var n=0,d=new Date();
     for(var i=0;i<400;i++){
       var k=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),day=data.daily[k];
-      if(day&&day.rutina){n++;}else if(i===0){}else{break;}
+      if(day&&day.rutina){n++;}else if(i===0||d.getDay()===0){/* hoy pendiente o domingo libre: no cortan */}else{break;}
       d.setDate(d.getDate()-1);
     }
     document.getElementById("streakNum").textContent=n;
@@ -386,13 +390,24 @@
     return null;
   }
   function nextStep(w){for(var j=0;j<LADDER.length;j++){if(LADDER[j]>w+0.01)return LADDER[j];}return null;}
+  function logsFor(key){ // historial del ejercicio, anterior a hoy, ordenado
+    var tk=todayKey(),out=[];
+    Object.keys(data.workouts).sort().forEach(function(dt){
+      if(dt<tk){var w=data.workouts[dt];if(w.ex&&w.ex[key])out.push(w.ex[key]);}
+    });
+    return out;
+  }
   function suggest(key){
-    var e=EXERCISES[key],last=lastLog(key);
+    var e=EXERCISES[key],hist=logsFor(key),last=hist[hist.length-1],prev=hist.length>1?hist[hist.length-2]:null;
     if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg y aprende el movimiento"};
     if(last.r1>=e.top&&last.r2>=e.top){
       var nw=nextStep(last.w);
       if(nw)return{w:nw,txt:"Lograste "+last.r1+"+"+last.r2+" reps → hoy sube a "+fmtKg(nw)+" kg"};
       return{w:last.w,txt:"Estás en el tope de tus discos ("+fmtKg(last.w)+" kg). Baja la velocidad o suma reps"};
+    }
+    // detector de estancamiento: mismo peso y reps cayendo vs la sesión anterior
+    if(prev&&prev.w===last.w&&(last.r1+last.r2)<=(prev.r1+prev.r2)-2){
+      return{w:last.w,txt:"Ojo: tus reps bajaron ("+prev.r1+"+"+prev.r2+" → "+last.r1+"+"+last.r2+"). Mantén "+fmtKg(last.w)+" kg, y revisa sueño y comida"};
     }
     return{w:last.w,txt:"Sigue con "+fmtKg(last.w)+" kg hasta lograr "+e.top+"+"+e.top+" reps"};
   }
@@ -489,6 +504,34 @@
     wrap.innerHTML=h+'</div>';
   }
 
+  // PROGRESO — entrenamientos
+  var SHORT={goblet:"Goblet",press_hombro:"Hombros",press_pecho:"Pecho",peso_muerto:"P.muerto",remo:"Remo",zancada:"Zancada"};
+  function renderLoads(){
+    var wrap=document.getElementById("loadProg"),dates=Object.keys(data.workouts).sort(),html="",any=false;
+    Object.keys(EXERCISES).forEach(function(k){
+      var ws=[];dates.forEach(function(dt){var w=data.workouts[dt];if(w.ex&&w.ex[k])ws.push(w.ex[k].w);});
+      if(!ws.length)return;any=true;
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);">'+
+        '<span style="flex:1;font-size:13px;">'+EXERCISES[k].name+'</span>'+
+        '<span style="width:110px;">'+sparkline(ws,110,22)+'</span>'+
+        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--amber);white-space:nowrap;">'+fmtKg(ws[ws.length-1])+' kg</span></div>';
+    });
+    wrap.innerHTML=any?html:'<div class="empty">Aún no hay entrenamientos.</div>';
+  }
+  function renderSessions(){
+    var wrap=document.getElementById("workoutHist"),dates=Object.keys(data.workouts).sort().reverse().slice(0,14);
+    if(!dates.length){wrap.innerHTML='<div class="empty">Aún no hay sesiones.</div>';return;}
+    var h="";
+    dates.forEach(function(dt){
+      var w=data.workouts[dt],parts=[];
+      (w.day==="A"?DAY_A:DAY_B).forEach(function(k){var l=w.ex[k];if(l)parts.push(SHORT[k]+" "+fmtKg(l.w)+" ("+l.r1+"+"+l.r2+")");});
+      h+='<div style="padding:10px 4px;border-bottom:1px solid var(--line);">'+
+        '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--text-dim);">'+fmtShort(dt)+' · Día '+w.day+'</div>'+
+        '<div style="font-size:13px;margin-top:2px;">'+parts.join(" · ")+'</div></div>';
+    });
+    wrap.innerHTML=h;
+  }
+
   // PLAN — exercises
   function renderExercises(){
     function row(key){
@@ -546,7 +589,7 @@
         var dayKeys=data.workouts[tk2].day==="A"?DAY_A:DAY_B;
         var all=dayKeys.every(function(k){return data.workouts[tk2].ex[k];});
         if(all){var dd=data.daily[tk2]||{};dd.rutina=true;data.daily[tk2]=dd;}
-        save();renderWorkout();renderStreak();closeSheet();
+        save();renderWorkout();renderStreak();renderLoads();renderSessions();closeSheet();
         toast(all?"Rutina de hoy completa":"Ejercicio guardado");
       });
     }
@@ -636,7 +679,7 @@
   var toastEl=document.getElementById("toast"),toastT;
   function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove("show");},1800);}
 
-  function renderAll(){renderWorkout();renderChecks();renderStreak();renderReadings();renderHistory();renderTestAlert();renderExercises();}
+  function renderAll(){renderWorkout();renderChecks();renderStreak();renderReadings();renderHistory();renderTestAlert();renderLoads();renderSessions();renderExercises();}
   renderAll();
 
   // Service worker: cache offline (requiere https o localhost; en file:// no corre)
