@@ -367,6 +367,9 @@
 
   // RUTINA DE HOY — registro por ejercicio y progresión automática
   var LADDER=[1.5,2.5,4,5,6.5,7.5,9,10]; // kg por mancuerna, con tus discos
+  // receta de discos POR LADO de cada barra (barra+collares = 1,5)
+  var RECIPE={1.5:"barra sola, sin discos",2.5:"un 0,5 por lado",4:"un 1,25 por lado",5:"1,25 + 0,5 por lado",6.5:"un 2,5 por lado",7.5:"2,5 + 0,5 por lado",9:"2,5 + 1,25 por lado",10:"2,5 + 1,25 + 0,5 por lado"};
+  function rx(w){return RECIPE[w]?" — discos: "+RECIPE[w]:"";}
   function fmtKg(v){return (""+v).replace(".",",");}
   function todayDayPlan(){
     var tk=todayKey();
@@ -399,10 +402,10 @@
   }
   function suggest(key){
     var e=EXERCISES[key],hist=logsFor(key),last=hist[hist.length-1],prev=hist.length>1?hist[hist.length-2]:null;
-    if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg y aprende el movimiento"};
+    if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg ("+RECIPE[LADDER[0]]+") y aprende el movimiento"};
     if(last.r1>=e.top&&last.r2>=e.top){
       var nw=nextStep(last.w);
-      if(nw)return{w:nw,txt:"Lograste "+last.r1+"+"+last.r2+" reps → hoy sube a "+fmtKg(nw)+" kg"};
+      if(nw)return{w:nw,txt:"Lograste "+last.r1+"+"+last.r2+" reps → hoy sube a "+fmtKg(nw)+" kg"+rx(nw)};
       return{w:last.w,txt:"Estás en el tope de tus discos ("+fmtKg(last.w)+" kg). Baja la velocidad o suma reps"};
     }
     // detector de estancamiento: mismo peso y reps cayendo vs la sesión anterior
@@ -443,7 +446,7 @@
         if(!last)pw=LADDER[0];
         else if(last.r1>=e.top&&last.r2>=e.top)pw=nextStep(last.w)||last.w;
         else pw=last.w;
-        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>";
+        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>"+(RECIPE[pw]?" <span style=\"color:var(--text-faint)\">("+RECIPE[pw]+")</span>":"");
       });
       var c=document.createElement("div");c.className="card";c.style.marginTop="4px";
       c.innerHTML='<h3>Deja listo para la próxima</h3><p>Próxima sesión: <b style="color:var(--text)">Día '+tday+'</b>. Deja cada mancuerna armada así:<br>'+parts.join("<br>")+'</p>';
