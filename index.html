@@ -175,7 +175,7 @@
 
       <div class="section-label">Rutina de fuerza · 12–15 min</div>
       <div class="card" style="margin-bottom:14px;">
-        <p style="margin:0;">La rutina del día te aparece armada en <b style="color:var(--text)">HOY</b>, con el peso que te corresponde usar. Se alternan el día <b style="color:var(--text)">A</b> (empuje) y el <b style="color:var(--text)">B</b> (tirón), uno por día de entrenamiento. Esta lista es la referencia completa: toca cualquier ejercicio para ver cómo se hace.</p>
+        <p style="margin:0;">La rutina del día te aparece armada en <b style="color:var(--text)">HOY</b>, con el peso que te corresponde usar. Se alternan el día <b style="color:var(--text)">A</b> (piernas) y el <b style="color:var(--text)">B</b> (tronco), uno por día de entrenamiento — así cada grupo muscular descansa 48 horas. Esta lista es la referencia completa: toca cualquier ejercicio para ver cómo se hace.</p>
       </div>
       <div class="card" style="margin-bottom:14px;">
         <h3>Diccionario básico</h3>
@@ -183,9 +183,9 @@
         <b style="color:var(--text)">Serie:</b> una tanda de repeticiones seguidas. "2 series de 8 a 12" = haces entre 8 y 12 repeticiones, descansas 1–2 minutos, y haces la segunda tanda.<br>
         <b style="color:var(--text)">Dejar 1–2 en el tanque:</b> terminar la serie sintiendo que podrías hacer 1 o 2 más. Nunca llegues a no poder completar el movimiento.</p>
       </div>
-      <div class="day-tag">DÍA A · EMPUJE</div>
+      <div class="day-tag">DÍA A · PIERNAS</div>
       <div id="exA"></div>
-      <div class="day-tag" style="margin-top:14px;">DÍA B · TIRÓN</div>
+      <div class="day-tag" style="margin-top:14px;">DÍA B · TRONCO</div>
       <div id="exB"></div>
       <div class="card" style="margin-top:14px;">
         <h3>La regla que construye músculo</h3>
@@ -304,6 +304,10 @@
       svg:G+'<line class="fig-ground" x1="20" y1="150" x2="220" y2="150"/><circle class="fig-head" cx="56" cy="138" r="12"/><path class="fig" d="M68 142 L150 142"/><path class="fig" d="M150 142 L168 120 L182 148"/><path class="fig" d="M86 140 L96 108 M96 108 L94 92"/><rect class="fig-weight" x="84" y="84" width="20" height="9" rx="2"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
       steps:["Acostado de espaldas en el suelo o colchoneta, rodillas dobladas, pies apoyados.","Una mancuerna en cada mano a la altura del pecho, codos en el suelo a ~45°.","Empuja las mancuernas hacia el techo hasta estirar los brazos.","Baja lento hasta que los codos toquen el suelo. Esa es 1 repetición.","Sin mancuernas: hazlo como flexiones, manos bajo los hombros, cuerpo recto."],
       video:"floor press mancuernas tecnica"},
+    flexiones:{name:"Flexiones",sub:"pecho, tríceps · lastre en mochila",sets:"2 series · 8–12 reps",top:12,bw:true,
+      svg:G+'<circle class="fig-head" cx="46" cy="116" r="12"/><path class="fig" d="M58 122 L198 168"/><path class="fig" d="M74 128 L78 184 M96 134 L100 184"/><path class="fig" d="M198 168 L206 184"/><rect class="fig-weight" x="100" y="104" width="30" height="13" rx="3"/>',
+      steps:["Manos en el suelo bajo los hombros, un poco más anchas. Cuerpo recto como tabla: aprieta abdomen y glúteos.","Baja el pecho controlado hasta casi tocar el suelo, codos a ~45° del cuerpo.","Empuja el suelo hasta estirar los brazos. Esa es 1 repetición.","Con lastre: mochila firme con discos adentro, pegada a la espalda, correas bien apretadas.","Si con el lastre pierdes la línea recta del cuerpo, baja el peso: la tabla no se negocia."],
+      video:"flexiones tecnica correcta con lastre mochila"},
     peso_muerto:{name:"Peso muerto rumano",sub:"isquios, glúteo, lumbar",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<circle class="fig-head" cx="72" cy="52" r="13"/><path class="fig" d="M80 62 L146 108"/><path class="fig" d="M146 108 L150 150 L144 184"/><path class="fig" d="M84 66 L92 122"/><rect class="fig-weight" x="82" y="124" width="20" height="9" rx="2"/><path class="fig-arrow" d="M170 90 Q182 110 172 134"/>',
       steps:["De pie, mancuernas frente a los muslos, rodillas apenas dobladas (casi rectas).","Lleva las caderas hacia atrás bajando el tronco, espalda recta (no curvada).","Las mancuernas bajan pegadas a las piernas hasta media canilla; sentirás estiramiento atrás del muslo.","Vuelve subiendo apretando los glúteos. Peso moderado, sobre todo en la mañana."],
@@ -317,8 +321,8 @@
       steps:["De pie, una mancuerna en cada mano a los costados.","Da un paso largo hacia adelante con una pierna.","Baja doblando ambas rodillas hasta que la de atrás casi toque el suelo; tronco erguido.","Empuja con la pierna de adelante para volver. Completa el lado y cambia.","Variante búlgara: apoya el empeine de atrás en una silla para más intensidad."],
       video:"zancada con mancuernas tecnica"}
   };
-  var DAY_A=["goblet","press_hombro","press_pecho"];
-  var DAY_B=["peso_muerto","remo","zancada"];
+  var DAY_A=["goblet","peso_muerto","zancada"];   // piernas
+  var DAY_B=["press_hombro","flexiones","remo"]; // tronco
 
   var data=load();
   function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(!o.workouts)o.workouts={};return o;}}catch(e){}return seed();}
@@ -402,6 +406,12 @@
   }
   function suggest(key){
     var e=EXERCISES[key],hist=logsFor(key),last=hist[hist.length-1],prev=hist.length>1?hist[hist.length-2]:null;
+    if(e.bw){ // ejercicio a peso corporal con lastre en mochila
+      if(!last)return{w:5,txt:"Parte con 5 kg de lastre en la mochila y busca "+e.top+"+"+e.top+" reps limpias"};
+      if(last.r1>=e.top&&last.r2>=e.top)return{w:last.w+1.25,txt:"Lograste "+last.r1+"+"+last.r2+" reps → suma 1,25 kg a la mochila (total "+fmtKg(last.w+1.25)+" kg)"};
+      if(prev&&prev.w===last.w&&(last.r1+last.r2)<=(prev.r1+prev.r2)-2)return{w:last.w,txt:"Ojo: tus reps bajaron ("+prev.r1+"+"+prev.r2+" → "+last.r1+"+"+last.r2+"). Mantén "+fmtKg(last.w)+" kg de lastre, y revisa sueño y comida"};
+      return{w:last.w,txt:"Sigue con "+fmtKg(last.w)+" kg de lastre hasta lograr "+e.top+"+"+e.top+" reps"};
+    }
     if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg ("+RECIPE[LADDER[0]]+") y aprende el movimiento"};
     if(last.r1>=e.top&&last.r2>=e.top){
       var nw=nextStep(last.w);
@@ -416,7 +426,7 @@
   }
   function renderWorkout(){
     var tk=todayKey(),day=todayDayPlan(),keys=day==="A"?DAY_A:DAY_B;
-    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · EMPUJE":" · TIRÓN")+'</div><p class="test-note">Toca cada ejercicio al empezarlo: adentro está el descanso cronometrado. Al terminar anota tus reps de cada serie y guarda — el peso ya viene propuesto.</p>'+
+    document.getElementById("dayTag").innerHTML='<div class="day-tag">DÍA '+day+(day==="A"?" · PIERNAS":" · TRONCO")+'</div><p class="test-note">Toca cada ejercicio al empezarlo: adentro está el descanso cronometrado. Al terminar anota tus reps de cada serie y guarda — el peso ya viene propuesto.</p>'+
       '<div class="card" style="padding:12px 16px;margin-bottom:10px;"><p style="font-size:13px;margin:0;"><b style="color:var(--amber)">Primero calienta 2–3 min:</b> 10 círculos de cadera por lado · 10 círculos de brazos adelante y 10 atrás · 10 medias sentadillas sin peso. Recién despierto, tu columna lo necesita. <a href="https://www.youtube.com/results?search_query=movilidad+articular+calentamiento+circulos+cadera+hombros+medias+sentadillas" target="_blank" rel="noopener" style="color:var(--amber)">▶ ver ejemplo en video</a></p>'+
       '<div id="wuBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:36px;font-weight:600;color:var(--amber);padding:6px 0 0;"></div>'+
       '<button class="btn subtle" id="wuBtn" style="margin-top:10px;">▶ Calentar · 2:30 con aviso</button></div>';
@@ -446,7 +456,7 @@
         if(!last)pw=LADDER[0];
         else if(last.r1>=e.top&&last.r2>=e.top)pw=nextStep(last.w)||last.w;
         else pw=last.w;
-        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>"+(RECIPE[pw]?" <span style=\"color:var(--text-faint)\">("+RECIPE[pw]+")</span>":"");
+        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>"+(e.bw?" <span style=\"color:var(--text-faint)\">(lastre en la mochila)</span>":(RECIPE[pw]?" <span style=\"color:var(--text-faint)\">("+RECIPE[pw]+")</span>":""));
       });
       var c=document.createElement("div");c.className="card";c.style.marginTop="4px";
       c.innerHTML='<h3>Deja listo para la próxima</h3><p>Próxima sesión: <b style="color:var(--text)">Día '+tday+'</b>. Deja cada mancuerna armada así:<br>'+parts.join("<br>")+'</p>';
@@ -508,7 +518,7 @@
   }
 
   // PROGRESO — entrenamientos
-  var SHORT={goblet:"Goblet",press_hombro:"Hombros",press_pecho:"Pecho",peso_muerto:"P.muerto",remo:"Remo",zancada:"Zancada"};
+  var SHORT={goblet:"Goblet",press_hombro:"Hombros",press_pecho:"Pecho",flexiones:"Flexiones",peso_muerto:"P.muerto",remo:"Remo",zancada:"Zancada"};
   function renderLoads(){
     var wrap=document.getElementById("loadProg"),dates=Object.keys(data.workouts).sort(),html="",any=false;
     Object.keys(EXERCISES).forEach(function(k){
@@ -527,7 +537,7 @@
     var h="";
     dates.forEach(function(dt){
       var w=data.workouts[dt],parts=[];
-      (w.day==="A"?DAY_A:DAY_B).forEach(function(k){var l=w.ex[k];if(l)parts.push(SHORT[k]+" "+fmtKg(l.w)+" ("+l.r1+"+"+l.r2+")");});
+      Object.keys(w.ex).forEach(function(k){var l=w.ex[k];parts.push((SHORT[k]||k)+" "+fmtKg(l.w)+" ("+l.r1+"+"+l.r2+")");});
       h+='<div style="padding:10px 4px;border-bottom:1px solid var(--line);">'+
         '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--text-dim);">'+fmtShort(dt)+' · Día '+w.day+'</div>'+
         '<div style="font-size:13px;margin-top:2px;">'+parts.join(" · ")+'</div></div>';
@@ -563,7 +573,7 @@
         '<div id="restBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:40px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
         '<button class="btn subtle" id="btnRest" style="margin-bottom:6px;">▶ Descanso entre series</button>'+
         '<p style="font-size:12px;color:var(--text-faint);margin-bottom:14px;text-align:center;">La app elige sola: 60 s con peso liviano (hasta 4 kg), 90 s desde 5 kg. De pie o camina suave, sorbo de agua. No elongues ahora.</p>'+
-        '<div class="field"><label>Peso usado por mancuerna (kg)</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
+        '<div class="field"><label>'+(e.bw?"Lastre en la mochila (kg · 0 = sin peso)":"Peso usado por mancuerna (kg)")+'</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
         '<div class="field-row"><div class="field"><label>Serie 1 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
         '<div class="field"><label>Serie 2 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
         '<button class="btn" id="saveLog">Guardar ejercicio</button>';
@@ -584,7 +594,7 @@
         var wv=Number(document.getElementById("log-w").value),
             r1=Number(document.getElementById("log-r1").value),
             r2=Number(document.getElementById("log-r2").value);
-        if(!wv||wv<=0){toast("Falta el peso usado");return;}
+        if(isNaN(wv)||wv<0||(!e.bw&&wv<=0)){toast("Falta el peso usado");return;}
         if(!r1&&!r2){toast("Anota al menos una serie");return;}
         var tk2=todayKey();
         if(!data.workouts[tk2])data.workouts[tk2]={day:todayDayPlan(),ex:{}};
