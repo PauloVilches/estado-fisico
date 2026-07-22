@@ -304,10 +304,10 @@
       svg:G+'<line class="fig-ground" x1="20" y1="150" x2="220" y2="150"/><circle class="fig-head" cx="56" cy="138" r="12"/><path class="fig" d="M68 142 L150 142"/><path class="fig" d="M150 142 L168 120 L182 148"/><path class="fig" d="M86 140 L96 108 M96 108 L94 92"/><rect class="fig-weight" x="84" y="84" width="20" height="9" rx="2"/><path class="fig-arrow" d="M120 110 L120 96 M114 102 L120 95 L126 102"/>',
       steps:["Acostado de espaldas en el suelo o colchoneta, rodillas dobladas, pies apoyados.","Una mancuerna en cada mano a la altura del pecho, codos en el suelo a ~45°.","Empuja las mancuernas hacia el techo hasta estirar los brazos.","Baja lento hasta que los codos toquen el suelo. Esa es 1 repetición.","Sin mancuernas: hazlo como flexiones, manos bajo los hombros, cuerpo recto."],
       video:"floor press mancuernas tecnica"},
-    flexiones:{name:"Flexiones",sub:"pecho, tríceps · lastre en mochila",sets:"2 series · 8–12 reps",top:12,bw:true,
-      svg:G+'<circle class="fig-head" cx="46" cy="116" r="12"/><path class="fig" d="M58 122 L198 168"/><path class="fig" d="M74 128 L78 184 M96 134 L100 184"/><path class="fig" d="M198 168 L206 184"/><rect class="fig-weight" x="100" y="104" width="30" height="13" rx="3"/>',
-      steps:["Manos en el suelo bajo los hombros, un poco más anchas. Cuerpo recto como tabla: aprieta abdomen y glúteos.","Baja el pecho controlado hasta casi tocar el suelo, codos a ~45° del cuerpo.","Empuja el suelo hasta estirar los brazos. Esa es 1 repetición.","Con lastre: mochila firme con discos adentro, pegada a la espalda, correas bien apretadas.","Si con el lastre pierdes la línea recta del cuerpo, baja el peso: la tabla no se negocia."],
-      video:"flexiones tecnica correcta con lastre mochila"},
+    flexiones:{name:"Flexiones",sub:"pecho, tríceps · progresa por niveles, sin equipo",sets:"2 series · según nivel",top:12,bw:true,
+      svg:G+'<circle class="fig-head" cx="46" cy="116" r="12"/><path class="fig" d="M58 122 L198 168"/><path class="fig" d="M74 128 L78 184 M96 134 L100 184"/><path class="fig" d="M198 168 L206 184"/>',
+      steps:["Manos en el suelo bajo los hombros, un poco más anchas. Cuerpo recto como tabla: aprieta abdomen y glúteos.","Baja el pecho controlado hasta casi tocar el suelo, codos a ~45° del cuerpo.","Empuja el suelo hasta estirar los brazos. Esa es 1 repetición.","Niveles superiores: pies sobre la silla (carga más pecho y hombros) y después bajada lenta de 3 segundos.","En cualquier nivel: si se quiebra la línea recta del cuerpo, ese nivel aún no es el tuyo."],
+      video:"flexiones pies elevados en silla tecnica"},
     peso_muerto:{name:"Peso muerto rumano",sub:"isquios, glúteo, lumbar",sets:"2 series · 8–12 reps",top:12,
       svg:G+'<circle class="fig-head" cx="72" cy="52" r="13"/><path class="fig" d="M80 62 L146 108"/><path class="fig" d="M146 108 L150 150 L144 184"/><path class="fig" d="M84 66 L92 122"/><rect class="fig-weight" x="82" y="124" width="20" height="9" rx="2"/><path class="fig-arrow" d="M170 90 Q182 110 172 134"/>',
       steps:["De pie, mancuernas frente a los muslos, rodillas apenas dobladas (casi rectas).","Lleva las caderas hacia atrás bajando el tronco, espalda recta (no curvada).","Las mancuernas bajan pegadas a las piernas hasta media canilla; sentirás estiramiento atrás del muslo.","Vuelve subiendo apretando los glúteos. Peso moderado, sobre todo en la mañana."],
@@ -406,11 +406,25 @@
   }
   function suggest(key){
     var e=EXERCISES[key],hist=logsFor(key),last=hist[hist.length-1],prev=hist.length>1?hist[hist.length-2]:null;
-    if(e.bw){ // ejercicio a peso corporal con lastre en mochila
-      if(!last)return{w:5,txt:"Parte con 5 kg de lastre en la mochila y busca "+e.top+"+"+e.top+" reps limpias"};
-      if(last.r1>=e.top&&last.r2>=e.top)return{w:last.w+1.25,txt:"Lograste "+last.r1+"+"+last.r2+" reps → suma 1,25 kg a la mochila (total "+fmtKg(last.w+1.25)+" kg)"};
-      if(prev&&prev.w===last.w&&(last.r1+last.r2)<=(prev.r1+prev.r2)-2)return{w:last.w,txt:"Ojo: tus reps bajaron ("+prev.r1+"+"+prev.r2+" → "+last.r1+"+"+last.r2+"). Mantén "+fmtKg(last.w)+" kg de lastre, y revisa sueño y comida"};
-      return{w:last.w,txt:"Sigue con "+fmtKg(last.w)+" kg de lastre hasta lograr "+e.top+"+"+e.top+" reps"};
+    if(e.bw){ // progresión por NIVELES sin equipo: el campo peso guarda el nivel (1, 2, 3...)
+      var LV=[
+        {n:"flexiones normales",top:15},
+        {n:"flexiones normales",top:20},
+        {n:"pies sobre la silla",top:10},
+        {n:"pies sobre la silla",top:14},
+        {n:"pies sobre la silla · bajada lenta 3 s",top:12},
+        {n:"pies sobre la silla · bajada lenta 3 s",top:16}
+      ];
+      var lvl=function(i){return LV[Math.min(Math.max(1,Math.round(i)),LV.length)-1];};
+      if(!last)return{w:1,txt:"Nivel 1 · "+LV[0].n+" — busca "+LV[0].top+"+"+LV[0].top+" reps"};
+      var cur=lvl(last.w);
+      if(last.r1>=cur.top&&last.r2>=cur.top){
+        if(last.w>=LV.length)return{w:last.w,txt:"Nivel máximo dominado ("+cur.n+") — pídeme la siguiente etapa"};
+        var nx=lvl(last.w+1);
+        return{w:Math.round(last.w)+1,txt:"Lograste "+last.r1+"+"+last.r2+" → Nivel "+(Math.round(last.w)+1)+" · "+nx.n+" — busca "+nx.top+"+"+nx.top};
+      }
+      if(prev&&prev.w===last.w&&(last.r1+last.r2)<=(prev.r1+prev.r2)-2)return{w:last.w,txt:"Ojo: tus reps bajaron ("+prev.r1+"+"+prev.r2+" → "+last.r1+"+"+last.r2+"). Mantén el nivel "+Math.round(last.w)+", y revisa sueño y comida"};
+      return{w:last.w,txt:"Sigue en Nivel "+Math.round(last.w)+" · "+cur.n+" hasta lograr "+cur.top+"+"+cur.top+" reps"};
     }
     if(!last)return{w:LADDER[0],txt:"Primera vez: parte con "+fmtKg(LADDER[0])+" kg ("+RECIPE[LADDER[0]]+") y aprende el movimiento"};
     if(last.r1>=e.top&&last.r2>=e.top){
@@ -442,7 +456,7 @@
       var el=document.createElement("div");
       el.className="ex"+(logged?" done":"");
       el.innerHTML='<div class="thumb"><svg viewBox="0 0 240 200">'+e.svg+'</svg></div>'+
-        '<div class="ex-body"><div class="ex-name">'+e.name+'</div><div class="ex-sub">'+(logged?("✓ hecho · "+fmtKg(logged.w)+" kg · "+logged.r1+"+"+logged.r2+" reps"):s.txt)+'</div></div>'+
+        '<div class="ex-body"><div class="ex-name">'+e.name+'</div><div class="ex-sub">'+(logged?("✓ hecho · "+(e.bw?("nivel "+logged.w):(fmtKg(logged.w)+" kg"))+" · "+logged.r1+"+"+logged.r2+" reps"):s.txt)+'</div></div>'+
         '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
       el.addEventListener("click",function(){openExercise(key,true);});
       wrap.appendChild(el);
@@ -456,7 +470,8 @@
         if(!last)pw=LADDER[0];
         else if(last.r1>=e.top&&last.r2>=e.top)pw=nextStep(last.w)||last.w;
         else pw=last.w;
-        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>"+(e.bw?" <span style=\"color:var(--text-faint)\">(lastre en la mochila)</span>":(RECIPE[pw]?" <span style=\"color:var(--text-faint)\">("+RECIPE[pw]+")</span>":""));
+        if(e.bw)return e.name+" → <b style=\"color:var(--amber)\">nivel "+pw+"</b> <span style=\"color:var(--text-faint)\">(sin equipo)</span>";
+        return e.name+" → <b style=\"color:var(--amber)\">"+fmtKg(pw)+" kg</b>"+(RECIPE[pw]?" <span style=\"color:var(--text-faint)\">("+RECIPE[pw]+")</span>":"");
       });
       var c=document.createElement("div");c.className="card";c.style.marginTop="4px";
       c.innerHTML='<h3>Deja listo para la próxima</h3><p>Próxima sesión: <b style="color:var(--text)">Día '+tday+'</b>. Deja cada mancuerna armada así:<br>'+parts.join("<br>")+'</p>';
@@ -527,7 +542,7 @@
       html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);">'+
         '<span style="flex:1;font-size:13px;">'+EXERCISES[k].name+'</span>'+
         '<span style="width:110px;">'+sparkline(ws,110,22)+'</span>'+
-        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--amber);white-space:nowrap;">'+fmtKg(ws[ws.length-1])+' kg</span></div>';
+        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--amber);white-space:nowrap;">'+(EXERCISES[k].bw?("nivel "+ws[ws.length-1]):(fmtKg(ws[ws.length-1])+" kg"))+'</span></div>';
     });
     wrap.innerHTML=any?html:'<div class="empty">Aún no hay entrenamientos.</div>';
   }
@@ -537,7 +552,7 @@
     var h="";
     dates.forEach(function(dt){
       var w=data.workouts[dt],parts=[];
-      Object.keys(w.ex).forEach(function(k){var l=w.ex[k];parts.push((SHORT[k]||k)+" "+fmtKg(l.w)+" ("+l.r1+"+"+l.r2+")");});
+      Object.keys(w.ex).forEach(function(k){var l=w.ex[k];parts.push((SHORT[k]||k)+" "+((EXERCISES[k]&&EXERCISES[k].bw)?("n"+l.w):fmtKg(l.w))+" ("+l.r1+"+"+l.r2+")");});
       h+='<div style="padding:10px 4px;border-bottom:1px solid var(--line);">'+
         '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--text-dim);">'+fmtShort(dt)+' · Día '+w.day+'</div>'+
         '<div style="font-size:13px;margin-top:2px;">'+parts.join(" · ")+'</div></div>';
@@ -573,7 +588,7 @@
         '<div id="restBox" style="display:none;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:40px;font-weight:600;color:var(--amber);padding:2px 0 8px;"></div>'+
         '<button class="btn subtle" id="btnRest" style="margin-bottom:6px;">▶ Descanso entre series</button>'+
         '<p style="font-size:12px;color:var(--text-faint);margin-bottom:14px;text-align:center;">La app elige sola: 60 s con peso liviano (hasta 4 kg), 90 s desde 5 kg. De pie o camina suave, sorbo de agua. No elongues ahora.</p>'+
-        '<div class="field"><label>'+(e.bw?"Lastre en la mochila (kg · 0 = sin peso)":"Peso usado por mancuerna (kg)")+'</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
+        '<div class="field"><label>'+(e.bw?"Nivel (lo propone la app)":"Peso usado por mancuerna (kg)")+'</label><input type="number" inputmode="decimal" step="0.5" id="log-w" value="'+(logged?logged.w:s.w)+'"></div>'+
         '<div class="field-row"><div class="field"><label>Serie 1 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r1" value="'+(logged?logged.r1:"")+'" placeholder="0"></div>'+
         '<div class="field"><label>Serie 2 · reps que lograste'+(e.side?" (por lado)":"")+'</label><input type="number" inputmode="numeric" id="log-r2" value="'+(logged?logged.r2:"")+'" placeholder="0"></div></div>'+
         '<button class="btn" id="saveLog">Guardar ejercicio</button>';
